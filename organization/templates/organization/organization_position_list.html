@@ -1,0 +1,19 @@
+{# organization/templates/organization/organization_position_list.html #}
+{% extends "we_vote_base.html" %}
+
+{% block title %}{{ organization.name  }}{% endblock %}
+
+{%  block content %}
+<h1>{{ organization.name  }}</h1>
+<p><a href="{% url 'organization:organization_position_new' organization.id %}">Add New Position</a>,
+    <a href="{% url 'organization:organization_list' %}">Back to Organizations</a></p>
+
+{% if organization_position_list %}
+    {% for organization_position in organization_position_list %}
+        <h2>{{ organization_position.get_stance_display }} {{ organization_position.candidate_campaign.candidate_name }}</h2>
+        <a href="{% url 'organization:organization_position_edit' organization.id organization_position.id %}">(edit)</a>
+    {% endfor %}
+{% else %}
+    <p>(no positions found)</p>
+{% endif %}
+{% endblock %}

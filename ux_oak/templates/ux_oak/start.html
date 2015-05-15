@@ -1,0 +1,12 @@
+{# ux_oak/templates/ux_oak/start.html #}
+{% extends "we_vote_base.html" %}
+
+{% block title %}Start Page{% endblock %}
+
+{%  block content %}
+<h1>We Vote Prototype</h1>
+<p><a href="{% url 'my_ballot:my_ballot' %}">My Ballot</a></p>
+<p><a href="{% url 'organization:organization_list' %}">Organizations</a></p>
+<p><a href="{% url 'import_export:import_export_index' %}">Import Tools</a></p>
+
+{% endblock %}

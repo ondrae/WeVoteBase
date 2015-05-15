@@ -1,0 +1,38 @@
+{# organization/templates/organization/organization_position_edit.html #}
+{% extends "we_vote_base.html" %}
+
+{% block title %}{% if organization_position %}Edit Position{% else %}Add Position{% endif %}{% endblock %}
+
+{%  block content %}
+<h1>{% if not organization_position %}Enter Position for {% endif %}{{ organization.name }}{% if organization_position %}<br />
+Position on {{ organization_position.candidate_campaign.candidate_name }}{% endif %}
+</h1>
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+<form action="{% url "organization:organization_position_edit_process" %}" method="post">
+{% csrf_token %}
+    <input type="hidden" name="organization_id" value="{{ organization.id }}">
+    <input type="hidden" name="position_id" value="{% if organization_position %}{{ organization_position.id }}{% else %}0{% endif %}">
+Interface to switch between "select candidate" and "select measure"<br />
+    <label for="candidate_campaign_id_id">Candidate (ID for now)</label>
+{% if organization_position %}
+    Existing organization_position selected
+    <input type="text" name="candidate_campaign_name" id="candidate_campaign_id" value="{{ organization_position.candidate_campaign.id }}" />
+{% else %}
+    <input type="text" name="candidate_campaign_id" id="candidate_campaign_id_id" value="" />
+{% endif %}
+<br />
+
+    <label for="measure_campaign_id_id">Measure (ID for now)</label>
+{% if organization_position %}
+    Existing organization_position selected
+    <input type="text" name="measure_campaign_name" id="measure_campaign_id" value="{{ organization_position.measure_campaign.id }}" />
+{% else %}
+    <input type="text" name="measure_campaign_id" id="measure_campaign_id_id" value="" />
+{% endif %}
+
+    <p><a href="{% url 'organization:organization_position_list' organization.id %}">cancel</a>
+<input type="submit" value="{% if organization_position %}Update Position{% else %}Save New Position{% endif %}" /></p>
+</form>
+
+{% endblock %}

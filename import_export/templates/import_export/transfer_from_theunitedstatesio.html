@@ -1,0 +1,18 @@
+{% load staticfiles %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'politician/style.css' %}" />
+<h1>Politicians table populated from TheUnitedStates.io local database cache</h1>
+
+
+{% if politician_list %}
+    <ol>
+    {% for politician in politician_list %}
+        <li><a href="{% url 'politician:politician_detail' politician.id %}">{{ politician.display_full_name }}</a></li>
+    {% endfor %}
+    </ol>
+{% else %}
+    <p>No politicians are available.</p>
+{% endif %}
+
+<br />
+<a href="{% url 'import_export:import_export_index'%}">back to index</a>

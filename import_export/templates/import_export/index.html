@@ -1,0 +1,46 @@
+{% load staticfiles %}
+{% load bootstrap3 %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'import_export/style.css' %}" />
+
+<h1>Import from Other Data Sources</h1>
+
+<h2>Step 1: Import Data in Files into Local Database Cache Tables</h2>
+<p>Bring data in from these sources, into the local database cache:
+<ul>
+    <li>TheUnitedStates.io
+    (<a href="{% url 'import_export_theunitedstatesio:import_theunitedstatesio_from_csv' %}">import csv now</a>)
+        <ul>
+            <li>Legislators, Current</li>
+        </ul>
+    </li>
+    <li>Google Civic API
+    (<a href="{% url 'import_export_google_civic:import_voterinfo_from_json' %}">import json now</a>)
+        <ul>
+            <li>JSON Ballot info for San Francisco address</li>
+        </ul>
+    </li>
+
+</ul>
+</p>
+
+<h2>Step 2: Transfer Data from Local Database Cache Tables into We Vote Data Structures</h2>
+<p>Take the data cached locally and distribute it to the correct local We Vote db tables:
+<ul>
+<li>TheUnitedStates.io
+    (<a href="{% url 'import_export:transfer_from_theunitedstatesio' %}">transfer now</a>)
+    <ul>
+        <li>Legislators, Current => Politician</li>
+    </ul>
+</li>
+<li>Google Civic API
+    (<a href="{% url 'import_export:transfer_from_google_civic' %}">transfer now</a>)
+    <ul>
+        <li>GoogleCivicElection, GoogleCivicContestOffice, GoogleCivicCandidateCampaign, GoogleCivicContestReferendum</li>
+        <li>Politician Linkage to Candidate Campaign</li>
+    </ul>
+</li>
+</ul>
+</p>
+
+{# TODO: Correct the url <p><a href="{% url 'start:ux_oak' %}">Back to home</a></p>  #}

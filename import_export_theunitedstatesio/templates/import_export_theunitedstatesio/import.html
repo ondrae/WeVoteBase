@@ -1,0 +1,18 @@
+{% load staticfiles %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'import_export_theunitedstatesio/style.css' %}" />
+<h1>Legislators Imported from the www.TheUnitedStates.io Data Set, and cached in local db</h1>
+<p>This data has not been transferred to the We Vote tables that are in use.</p>
+
+{% if legislator_list %}
+    <ol>
+    {% for legislatorcurrent in legislator_list %}
+        <li><a href="{% url 'import_export_theunitedstatesio:legislatorcurrent_detail' legislatorcurrent.id %}">{{ legislatorcurrent.first_name }} {{ legislatorcurrent.last_name }}</a></li>
+    {% endfor %}
+    </ol>
+{% else %}
+    <p>No legislators are available.</p>
+{% endif %}
+
+<br />
+<a href="{% url 'import_export:import_export_index'%}">back to index</a>

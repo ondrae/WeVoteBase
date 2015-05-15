@@ -1,0 +1,23 @@
+{# ux_oak/templates/ux_oak/my_ballot.html #}
+{% extends "we_vote_base.html" %}
+
+{% block title %}My Ballot{% endblock %}
+
+{%  block content %}
+<h1>My Ballot</h1>
+
+{% if ballot_item_list %}
+    {% for ballot_item in ballot_item_list %}
+        <h2>{{ ballot_item.display_ballot_item }} {# <a href="#{% url 'ux_oak:politician_detail' ballot_item.id %}">(info)</a> #}</h2>
+        {% if ballot_item.is_contest_office %}
+            {% for candidate_campaign in ballot_item.candidates_list %}
+            <h3>{{ candidate_campaign.candidate_name }}</h3>
+            {% endfor %}
+        {% elif ballot_item.is_contest_measure %}
+            <h3>Is measure</h3>
+        {% endif %}
+    {% endfor %}
+{% else %}
+    <p>(empty ballot)</p>
+{% endif %}
+{% endblock %}
