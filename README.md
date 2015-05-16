@@ -17,9 +17,18 @@ We will be importing data from many sources, including:
 * Azavea's Cicero API
 * Twitter
 * Facebook
-* See http://www.ElectionDataSummary.org for links to a variety of election data sources we are exploring, as well as by joining our Google Group: https://groups.google.com/forum/#!forum/electiondata
+* See http://www.ElectionDataSummary.org for links to a variety of election data sources we are exploring
 
-Our approach is to write importers that take data from these sources into a local database, and then merge that data into a We Vote database structure so we can deliver a complete ballot to any American voter. Please reach out to us if you would like to help: http://www.wevoteeducation.org/#contact-us
+Our approach is to write importers that take data from these sources into a local database, and then merge that data into a We Vote database structure so we can deliver a complete ballot to any American voter. 
+
+### Join Us - Contributing to We Vote Base
+Please reach out to us if you would like to help or have any questions: 
+http://www.wevoteeducation.org/#contact-us
+
+To see what we are currently working on, see our Pivotal tracker:
+https://www.pivotaltracker.com/n/projects/1346856
+
+You may join our Google Group here for questions about election related data: https://groups.google.com/forum/#!forum/electiondata
 
 ### Setup - Dependencies
 
@@ -44,7 +53,14 @@ Change your local database configuration settings in (Search for "DATABASES") if
 
 wevotebase/settings.py
 
-Add to your local environment the following if you are going to connect to Google Civic API:
+Populate your database with the latest database tables:
+
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+Add the following to your local environment if you are going to connect to Google Civic API:
 
 ```bash
 export GOOGLE_CIVIC_API_KEY=<YOUR KEY HERE>
