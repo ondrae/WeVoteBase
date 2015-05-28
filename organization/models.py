@@ -3,13 +3,14 @@
 # -*- coding: UTF-8 -*-
 
 from django.db import models
-from position.models import Position
+from exception.models import handle_exception, handle_exception_silently, handle_record_found_more_than_one_exception,\
+    handle_record_not_found_exception, handle_record_not_saved_exception
 
 
 class Organization(models.Model):
     # We are relying on built-in Python id field
     name = models.CharField(
-        verbose_name="first name", max_length=255, default=None, null=True, blank=True)
+        verbose_name="organization name", max_length=255, default=None, null=True, blank=True)
     url = models.URLField(verbose_name='url of the endorsing organization', blank=True, null=True)
     twitter_handle = models.CharField(max_length=15, null=True, unique=False, verbose_name='twitter handle')
 
@@ -59,10 +60,38 @@ class Organization(models.Model):
             self.NONPROFIT_501C3, self.NONPROFIT_501C4, self.POLITICAL_ACTION_COMMITTEE,
             self.CORPORATION, self.NEWS_CORPORATION)
 
+class OrganizationManager(models.Model):
+    """
+    A class for working with the Organization model
+    """
+    def retrieve_organization(self, organization_id):
+        error_result = False
+        exception_does_not_exist = False
+        exception_multiple_object_returned = False
+        organization_on_stage = Organization()
+        organization_on_stage_id = 0
+        try:
+            organization_on_stage = Organization.objects.get(id=organization_id)
+            organization_on_stage_id = organization_on_stage.id
+        except Organization.MultipleObjectsReturned as e:
+            handle_record_found_more_than_one_exception(e)
+            error_result = True
+            exception_multiple_object_returned = True
+            print "position.organization Found multiple"
+        except Organization.DoesNotExist as e:
+            handle_exception_silently(e)
+            error_result = True
+            exception_does_not_exist = True
+            print "position.organization did not find"
 
-# class OrganizationPositionLink(models.Model):
-#     """
-#     A confirmed link between an Organization & a Position.
-#     """
-#     organization = models.ForeignKey(Organization, null=False, blank=False, verbose_name='organization')
-#     position = models.ForeignKey(Position, null=False, blank=False, verbose_name='position')
+        organization_on_stage_found = True if organization_on_stage_id > 0 else False
+        results = {
+            'success':                      True if organization_on_stage_found else False,
+            'organization_found':           organization_on_stage_found,
+            'organization_id':              organization_on_stage_id,
+            'organization':                 organization_on_stage,
+            'error_result':                 error_result,
+            'DoesNotExist':                 exception_does_not_exist,
+            'MultipleObjectsReturned':      exception_multiple_object_returned,
+        }
+        return results

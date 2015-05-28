@@ -39,6 +39,8 @@ urlpatterns = patterns(
     url(r'^org/', include('organization.urls', namespace="organization")),
     url(r'^politician_list/', include('politician.urls', namespace="politician_list")),
     url(r'^politician/', include('politician.urls', namespace="politician")),
+    url(r'^pos/', include('position.urls', namespace="position")),
+    url(r'^sod/', include('support_oppose_deciding.urls', namespace="support_oppose_deciding")),
     url(r'^tag/', include('tag.urls', namespace="tag")),
     # Django cookbook
     url(r'^js-settings/$', 'utils.views.render_js', {'template_name': 'settings.js'}, name="js_settings"),

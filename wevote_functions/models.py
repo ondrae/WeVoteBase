@@ -44,3 +44,10 @@ class switch(object):
 #         break
 #     if case(): # default
 #         print "I dunno what c was!"
+
+def convert_to_int(value):
+    try:
+        new_value = int(value)
+    except ValueError:
+        new_value = 0
+    return new_value

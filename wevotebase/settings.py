@@ -49,6 +49,7 @@ INSTALLED_APPS = (
     # project specific
     'election_office_measure',
     'exception',
+    'follow',
     'import_export',
     'import_export_azavea_cicero',
     'import_export_google_civic',
@@ -59,6 +60,7 @@ INSTALLED_APPS = (
     'politician',
     'position',
     'region_jurisdiction',
+    'support_oppose_deciding',
     'tag',
     'twitter',
     'utils',

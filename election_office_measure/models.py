@@ -5,7 +5,6 @@
 from django.db import models
 from exception.models import handle_exception, handle_exception_silently, handle_record_found_more_than_one_exception,\
     handle_record_not_found_exception, handle_record_not_saved_exception
-# from position.models import PositionEntered
 
 
 class Election(models.Model):
@@ -57,6 +56,20 @@ class ContestOffice(models.Model):
     district_ocd_id = models.CharField(verbose_name="open civic data id", max_length=254, null=False, blank=False)
 
 
+class CandidateCampaignList(models.Model):
+    """
+    This is a class to make it easy to retrieve lists of Candidates
+    """
+
+    def retrieve_candidate_campaigns_for_this_election_list(self):
+        candidates_list_temp = CandidateCampaign.objects.all()
+        # Order by candidate_name.
+        # To order by last name we will need to make some guesses in some case about what the last name is.
+        candidates_list_temp = candidates_list_temp.order_by('candidate_name')
+        candidates_list_temp = candidates_list_temp.filter(election_id=1)  # TODO Temp election_id
+        return candidates_list_temp
+
+
 class CandidateCampaign(models.Model):
     # election link to local We Vote Election entry. During setup we need to allow this to be null.
     election_id = models.IntegerField(verbose_name="election unique identifier", null=True, blank=True)
@@ -101,7 +114,6 @@ class CandidateCampaign(models.Model):
     #         return None
     #     print "Found candidate campaign. position_list"
     #     return position_list
-
 
 class ContestMeasure(models.Model):
     id_maplight = models.CharField(verbose_name="maplight unique identifier",
@@ -220,3 +232,39 @@ def retrieve_my_ballot(voter_on_stage, election_on_stage):
     # Retrieve all of the measure_contests in each of those jurisdictions
     return True
 
+class CandidateCampaignManager(models.Model):
+
+    def __unicode__(self):
+        return "CandidateCampaignManager"
+
+    def retrieve_candidate_campaign_from_id(self, candidate_campaign_id):
+        candidate_campaign_manager = CandidateCampaignManager()
+        return candidate_campaign_manager.retrieve_candidate_campaign(candidate_campaign_id)
+
+    # NOTE: searching by all other variables seems to return a list of objects
+    def retrieve_candidate_campaign(self, candidate_campaign_id):
+        error_result = False
+        exception_does_not_exist = False
+        exception_multiple_object_returned = False
+        candidate_campaign_on_stage = CandidateCampaign()
+
+        try:
+            if candidate_campaign_id > 0:
+                candidate_campaign_on_stage = CandidateCampaign.objects.get(id=candidate_campaign_id)
+                candidate_campaign_id = candidate_campaign_on_stage.id
+        except CandidateCampaign.MultipleObjectsReturned as e:
+            handle_record_found_more_than_one_exception(e)
+            exception_multiple_object_returned = True
+        except CandidateCampaign.DoesNotExist as e:
+            handle_exception_silently(e)
+            exception_does_not_exist = True
+
+        results = {
+            'error_result':             error_result,
+            'DoesNotExist':             exception_does_not_exist,
+            'MultipleObjectsReturned':  exception_multiple_object_returned,
+            'candidate_campaign_found': True if candidate_campaign_id > 0 else False,
+            'candidate_campaign_id':    candidate_campaign_id,
+            'candidate_campaign':       candidate_campaign_on_stage,
+        }
+        return results

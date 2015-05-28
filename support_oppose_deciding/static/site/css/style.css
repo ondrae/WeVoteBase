@@ -1,0 +1,88 @@
+h2 {
+    padding-top: 15px;
+}
+.support_on_link, .oppose_on_link, .ask_on_link {
+    font-weight: bold;
+}
+
+.support_link_text, .oppose_link_text {
+    padding-left: 4px;
+}
+
+.ask_link_text {
+    padding-left: 0px;
+}
+
+.support_on_img, .support_off_img {
+    vertical-align: text-bottom;
+}
+
+.oppose_on_img, .oppose_off_img {
+    vertical-align: middle;
+}
+
+.ask_on_img, .ask_off_img {
+    vertical-align: text-bottom;
+}
+
+.space_between_support_and_oppose {
+    padding-left: 10px;
+}
+
+.space_between_oppose_and_ask {
+    padding-left: 7px;
+}
+
+.action_bar {
+    padding-bottom: 6px;
+}
+
+.positions_text {
+
+}
+
+/* A span around the positions html that are being followed under each candidate */
+.positions_followed_text {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+/* A span around the positions html that are not being followed under each candidate */
+.positions_not_followed_text {
+    font-size: .675em;
+    font-weight: lighter;
+}
+/* This is the verb displayed after the list of orgs that support or oppose */
+.position_stance_verb {
+
+}
+
+.organization_position_label_title {
+    font-weight: bold;
+}
+
+.organization_position_label_modifier {
+    color: #555555;
+}
+
+.organization_position_statement_text {
+    flex-direction: column;
+    cursor: auto;
+    height: 210px;
+    padding: 2px;
+    white-space: pre-wrap;
+    width: 95%;
+    word-wrap: break-word;
+}
+
+.organization_position_more_info_url {
+    width: 95%;
+}
+
+.position_list_organization_name {
+    font-weight: bold;
+}
+
+.position_list_statement_text {
+    font-size: 0.6em;
+}
