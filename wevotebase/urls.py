@@ -28,8 +28,15 @@ from wevotebase import views
 
 urlpatterns = patterns(
     '',
-    url(r'^$', views.start_view, name='start',),
-    url(r'^myb/', include('ux_oak.urls', namespace="my_ballot")),
+    # Option B: default to start page
+    # url(r'^$', views.start_view),
+    # url(r'^myb/', include('ux_oak.urls', namespace="ux_oak")),
+
+    # Option B: default to ballot, and get to starting page at /start
+    url(r'^$', include('ux_oak.urls', namespace="ux_oak")),
+    # url(r'^start/', views.start_view),
+    url(r'^ux_oak/', include('ux_oak.urls', namespace="ux_oak_start")),
+
     url(r'^admin/', include(admin.site.urls)),
     url(r'^import_export/', include('import_export.urls', namespace="import_export")),
     url(r'^import_export_google_civic/', include(

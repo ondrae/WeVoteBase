@@ -104,3 +104,9 @@ Thumbs.db
 # Other #
 #########
 .idea
+
+# Heroku Related #
+##################
+Procfile
+*.pyc
+staticfiles

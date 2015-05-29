@@ -2,7 +2,7 @@
 # Brought to you by We Vote. Be good.
 # -*- coding: UTF-8 -*-
 
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from import_export_google_civic.models import import_voterinfo_from_json
 
 
@@ -11,6 +11,10 @@ def import_voterinfo_from_json_view(request):
     Take data from google civic information URL (JSON format) and store in the local database (???)
     Then display the data retrieved again from the local database
     """
+    # If person isn't signed in, we don't want to let them visit this page yet
+    if not request.user.is_authenticated():
+        return redirect('/admin')
+
     save_to_db = True
     json_from_google = import_voterinfo_from_json(save_to_db)
 

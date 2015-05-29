@@ -66,6 +66,12 @@ Add the following to your local environment if you are going to connect to Googl
 export GOOGLE_CIVIC_API_KEY=<YOUR KEY HERE>
 ```
 
+Creating an admin user. First we’ll need to create a user who can login to the admin site. Run the following command:
+
+```bash
+python manage.py createsuperuser
+```
+
 ### Import Test Data
 
 Start up the webserver:
@@ -79,3 +85,12 @@ Visit the site here: http://localhost:8000/
 Click on the "Import Tools" link, and import all data under Step 1. Transfer data to the We Vote tables under Step 2.
 
 Now go back to the root http://localhost:8000/ and click on the "My Ballot" link. You should be taken to a San Francisco ballot.
+
+### Coding Standards
+
+Please use descriptive full word variable names.
+
+* In the lifecycle of most projects, fixing bugs and maintaining current features end up taking 50%+ of total engineering time.
+* Our goal is to create a code base that is easy to understand, making fixing bugs and maintaining current features as painless as possible. We will have many engineers working with this code, and we want to be welcoming to engineers who are new to the project.
+* Short variable names can often create confusion, where a new engineer needs to spend time figuring out what a short variable name actually means. (Ex/ “per” or “p” instead of “person”.) For this project please use descriptive full word variable names.
+* Fellow engineers should be able to zoom around the code and not get stopped with riddles created by short names.  

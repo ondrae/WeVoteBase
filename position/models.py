@@ -10,7 +10,7 @@ from exception.models import handle_exception, handle_exception_silently, handle
 from organization.models import Organization
 from twitter.models import TwitterUser
 from django.contrib.auth.models import User
-# from voter.models import Voter  # Replace User with this once we have figured out User -> Voter object linking
+from voter.models import Voter  # Replace User with this once we have figured out User -> Voter object linking
 
 SUPPORT = 'SUPPORT'
 STILL_DECIDING = 'STILL_DECIDING'
@@ -51,7 +51,7 @@ class PositionEntered(models.Model):
     # This is the voter / authenticated user who entered the position for an organization
     #  (NOT the voter expressing opinion)
     voter_entering_position = models.ForeignKey(
-        User, verbose_name='authenticated user who entered position', null=True, blank=True)
+        Voter, verbose_name='authenticated user who entered position', null=True, blank=True)
     # The Twitter user account that generated this position
     twitter_user_entered_position = models.ForeignKey(TwitterUser, null=True, verbose_name='')
     # This is the candidate/politician that the position refers to.

@@ -7,10 +7,9 @@ from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.core.urlresolvers import reverse
 from django.contrib import messages
 from django.contrib.messages import get_messages
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from exception.models import handle_exception, handle_exception_silently, handle_record_found_more_than_one_exception,\
     handle_record_not_deleted_exception, handle_record_not_found_exception, handle_record_not_saved_exception
-
 from election_office_measure.models import CandidateCampaign, CandidateCampaignList, MeasureCampaign
 from follow.models import FollowOrganizationManager
 from organization.models import Organization
@@ -38,6 +37,10 @@ def organization_list_view(request):
 
 
 def organization_new_view(request):
+    # If person isn't signed in, we don't want to let them visit this page yet
+    if not request.user.is_authenticated():
+        return redirect('/admin')
+
     messages_on_stage = get_messages(request)
     template_values = {
         'messages_on_stage': messages_on_stage,
@@ -46,6 +49,10 @@ def organization_new_view(request):
 
 
 def organization_edit_view(request, organization_id):
+    # If person isn't signed in, we don't want to let them visit this page yet
+    if not request.user.is_authenticated():
+        return redirect('/admin')
+
     messages_on_stage = get_messages(request)
     organization_id = convert_to_int(organization_id)
     organization_on_stage_found = False
@@ -76,6 +83,10 @@ def organization_edit_process_view(request):
     :param request:
     :return:
     """
+    # If person isn't signed in, we don't want to let them visit this page yet
+    if not request.user.is_authenticated():
+        return redirect('/admin')
+
     organization_id = convert_to_int(request.POST['organization_id'])
     organization_name = request.POST['organization_name']
 
@@ -155,6 +166,10 @@ def organization_position_list_view(request, organization_id):
 
 
 def organization_add_new_position_form_view(request, organization_id):
+    # If person isn't signed in, we don't want to let them visit this page yet
+    if not request.user.is_authenticated():
+        return redirect('/admin')
+
     messages_on_stage = get_messages(request)
     organization_id = convert_to_int(organization_id)
     all_is_well = True
@@ -198,6 +213,10 @@ def organization_delete_existing_position_process_form_view(request, organizatio
     :param position_id:
     :return:
     """
+    # If person isn't signed in, we don't want to let them visit this page yet
+    if not request.user.is_authenticated():
+        return redirect('/admin')
+
     organization_id = convert_to_int(organization_id)
     position_id = convert_to_int(position_id)
 
@@ -239,6 +258,10 @@ def organization_edit_existing_position_form_view(request, organization_id, posi
     :param position_id:
     :return:
     """
+    # If person isn't signed in, we don't want to let them visit this page yet
+    if not request.user.is_authenticated():
+        return redirect('/admin')
+
     messages_on_stage = get_messages(request)
     organization_id = convert_to_int(organization_id)
     position_id = convert_to_int(position_id)
@@ -292,6 +315,10 @@ def organization_save_new_or_edit_existing_position_process_form_view(request):
     :param request:
     :return:
     """
+    # If person isn't signed in, we don't want to let them visit this page yet
+    if not request.user.is_authenticated():
+        return redirect('/admin')
+
     organization_id = convert_to_int(request.POST['organization_id'])
     position_id = convert_to_int(request.POST['position_id'])
     candidate_campaign_id = convert_to_int(request.POST['candidate_campaign_id'])

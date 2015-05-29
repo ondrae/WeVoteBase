@@ -8,5 +8,5 @@ from ux_oak import views
 
 urlpatterns = [
     url(r'^$', views.my_ballot_view, name='my_ballot'),
-    # url(r'^new_process/$', views.tag_new_process_view, name='tag_new_process'),
+    url(r'^start/', views.start_view, name='start'),
 ]

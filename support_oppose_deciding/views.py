@@ -3,8 +3,8 @@
 # -*- coding: UTF-8 -*-
 
 from django.http import JsonResponse
-from django.shortcuts import render
 from position.models import PositionEnteredManager
+from wevote_functions.models import get_voter_device_id
 
 def voter_supporting_candidate_campaign_view(request, candidate_campaign_id):
     print "voter_supporting_candidate_campaign_view {candidate_campaign_id}".format(
@@ -67,8 +67,9 @@ def voter_stop_asking_candidate_campaign_view(request, candidate_campaign_id):
 
 
 def voter_stance_for_candidate_campaign_view(request, candidate_campaign_id):
-    print "voter_stance_for_candidate_campaign_view {candidate_campaign_id}".format(
-        candidate_campaign_id=candidate_campaign_id)
+    # print "voter_stance_for_candidate_campaign_view {candidate_campaign_id}".format(
+    #     candidate_campaign_id=candidate_campaign_id)
+    voter_device_id = get_voter_device_id(request)
     voter_id = 1
     position_entered_manager = PositionEnteredManager()
     results = position_entered_manager.retrieve_voter_candidate_campaign_position(voter_id, candidate_campaign_id)

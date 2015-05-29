@@ -2,7 +2,7 @@
 # Brought to you by We Vote. Be good.
 # -*- coding: UTF-8 -*-
 
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 
 from politician.models import Politician
 from import_export.models import transfer_google_civic_voterinfo_cached_data_to_wevote_tables, \
@@ -27,6 +27,10 @@ def import_export_transfer_google_civic_to_local_tables_view(request):
     Take data from the local TheUnitedStatesIo database (TheUnitedStatesIoLegislatorCurrent)
     and transfer it to the We Vote data structures
     """
+    # If person isn't signed in, we don't want to let them visit this page yet
+    if not request.user.is_authenticated():
+        return redirect('/admin')
+
     transfer_google_civic_voterinfo_cached_data_to_wevote_tables()
 
     template_values = {
@@ -41,6 +45,10 @@ def import_export_transfer_theunitedstatesio_to_local_tables_view(request):
     Take data from the local TheUnitedStatesIo database (TheUnitedStatesIoLegislatorCurrent)
     and transfer it to the We Vote data structures
     """
+    # If person isn't signed in, we don't want to let them visit this page yet
+    if not request.user.is_authenticated():
+        return redirect('/admin')
+
     transfer_theunitedstatesio_cached_data_to_wevote_tables()
 
     template_values = {

@@ -66,7 +66,7 @@ INSTALLED_APPS = (
     'utils',
     'ux_oak',  # The business logic for this particular version of We Vote
     'wevote_functions',
-    #  'voter', Also turned off AUTH_USER_MODEL in wevoteprojectbase/settings.py because I wasn't able to sign into admin
+    'voter',  # See also AUTH_USER_MODEL in wevotebase/settings.py
 )
 
 MIDDLEWARE_CLASSES = (
@@ -136,7 +136,7 @@ USE_L10N = True
 USE_TZ = True
 
 # Described here: https://docs.djangoproject.com/en/1.8/topics/auth/customizing/#a-full-example
-# AUTH_USER_MODEL = 'voter.Voter'  # TODO Still a work-in-progress
+AUTH_USER_MODEL = 'voter.Voter'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
@@ -208,3 +208,26 @@ BOOTSTRAP3 = {
         'inline': 'bootstrap3.renderers.InlineFieldRenderer',
     },
 }
+
+########### Heroku Settings ###########
+# Comment out to run database locally
+
+# Parse database configuration from $DATABASE_URL
+import dj_database_url
+DATABASES['default'] = dj_database_url.config()
+
+# Honor the 'X-Forwarded-Proto' header for request.is_secure()
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Allow all host headers
+ALLOWED_HOSTS = ['*']
+
+# Static asset configuration
+import os
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_ROOT = 'staticfiles'
+STATIC_URL = '/static/'
+
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'static'),
+)

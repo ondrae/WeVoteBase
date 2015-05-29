@@ -2,7 +2,7 @@
 # Brought to you by We Vote. Be good.
 # -*- coding: UTF-8 -*-
 
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.views import generic
 
 from import_export_theunitedstatesio.models import TheUnitedStatesIoLegislatorCurrent
@@ -14,6 +14,10 @@ def import_theunitedstatesio_from_csv_view(request):
     Take data from csv file and store in the local TheUnitedStatesIo database (TheUnitedStatesIoLegislatorCurrent)
     Then display to the import template from the database
     """
+    # If person isn't signed in, we don't want to let them visit this page yet
+    if not request.user.is_authenticated():
+        return redirect('/admin')
+
     import_legislators_current_csv()
 
     template_values = {
