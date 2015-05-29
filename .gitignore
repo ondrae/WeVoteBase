@@ -107,6 +107,6 @@ Thumbs.db
 
 # Heroku Related #
 ##################
-Procfile
+venv
 *.pyc
 staticfiles

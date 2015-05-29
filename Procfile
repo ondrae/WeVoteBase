@@ -1,0 +1,1 @@
+web: gunicorn wevotebase.wsgi --log-file -
