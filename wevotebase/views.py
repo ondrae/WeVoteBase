@@ -5,11 +5,11 @@
 from django.shortcuts import render
 
 from politician.models import Politician
-from election_office_measure.models import BallotItemCache
+from election_office_measure.models import BallotItem
 
 #
 # def start_view(request):
-#     ballot_item_list = BallotItemCache.objects.order_by('ballot_item_label')
+#     ballot_item_list = BallotItem.objects.order_by('ballot_item_label')
 #     template_values = {
 #         'ballot_item_list': ballot_item_list,
 #     }

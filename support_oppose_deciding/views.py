@@ -4,12 +4,15 @@
 
 from django.http import JsonResponse
 from position.models import PositionEnteredManager
+from voter.models import fetch_voter_id_from_voter_device_link
 from wevote_functions.models import get_voter_device_id
 
 def voter_supporting_candidate_campaign_view(request, candidate_campaign_id):
-    print "voter_supporting_candidate_campaign_view {candidate_campaign_id}".format(
-        candidate_campaign_id=candidate_campaign_id)
-    voter_id = 1
+    # print "voter_supporting_candidate_campaign_view {candidate_campaign_id}".format(
+    #     candidate_campaign_id=candidate_campaign_id)
+    voter_device_id = get_voter_device_id(request)
+    voter_id = fetch_voter_id_from_voter_device_link(voter_device_id)
+
     position_entered_manager = PositionEnteredManager()
     results = position_entered_manager.toggle_on_voter_support_for_candidate_campaign(voter_id, candidate_campaign_id)
     if results['success']:
@@ -19,9 +22,11 @@ def voter_supporting_candidate_campaign_view(request, candidate_campaign_id):
 
 
 def voter_stop_supporting_candidate_campaign_view(request, candidate_campaign_id):
-    print "voter_stop_supporting_candidate_campaign_view {candidate_campaign_id}".format(
-        candidate_campaign_id=candidate_campaign_id)
-    voter_id = 1
+    # print "voter_stop_supporting_candidate_campaign_view {candidate_campaign_id}".format(
+    #     candidate_campaign_id=candidate_campaign_id)
+    voter_device_id = get_voter_device_id(request)
+    voter_id = fetch_voter_id_from_voter_device_link(voter_device_id)
+
     position_entered_manager = PositionEnteredManager()
     results = position_entered_manager.toggle_off_voter_support_for_candidate_campaign(voter_id, candidate_campaign_id)
     if results['success']:
@@ -31,9 +36,11 @@ def voter_stop_supporting_candidate_campaign_view(request, candidate_campaign_id
 
 
 def voter_opposing_candidate_campaign_view(request, candidate_campaign_id):
-    print "voter_opposing_candidate_campaign_view {candidate_campaign_id}".format(
-        candidate_campaign_id=candidate_campaign_id)
-    voter_id = 1
+    # print "voter_opposing_candidate_campaign_view {candidate_campaign_id}".format(
+    #     candidate_campaign_id=candidate_campaign_id)
+    voter_device_id = get_voter_device_id(request)
+    voter_id = fetch_voter_id_from_voter_device_link(voter_device_id)
+
     position_entered_manager = PositionEnteredManager()
     results = position_entered_manager.toggle_on_voter_oppose_for_candidate_campaign(voter_id, candidate_campaign_id)
     if results['success']:
@@ -43,9 +50,11 @@ def voter_opposing_candidate_campaign_view(request, candidate_campaign_id):
 
 
 def voter_stop_opposing_candidate_campaign_view(request, candidate_campaign_id):
-    print "voter_stop_opposing_candidate_campaign_view {candidate_campaign_id}".format(
-        candidate_campaign_id=candidate_campaign_id)
-    voter_id = 1
+    # print "voter_stop_opposing_candidate_campaign_view {candidate_campaign_id}".format(
+    #     candidate_campaign_id=candidate_campaign_id)
+    voter_device_id = get_voter_device_id(request)
+    voter_id = fetch_voter_id_from_voter_device_link(voter_device_id)
+
     position_entered_manager = PositionEnteredManager()
     results = position_entered_manager.toggle_off_voter_oppose_for_candidate_campaign(voter_id, candidate_campaign_id)
     if results['success']:
@@ -57,12 +66,18 @@ def voter_stop_opposing_candidate_campaign_view(request, candidate_campaign_id):
 def voter_asking_candidate_campaign_view(request, candidate_campaign_id):
     print "voter_asking_candidate_campaign_view {candidate_campaign_id}".format(
         candidate_campaign_id=candidate_campaign_id)
+    voter_device_id = get_voter_device_id(request)
+    voter_id = fetch_voter_id_from_voter_device_link(voter_device_id)
+
     return JsonResponse({0: "not working yet - needs to be built"})
 
 
 def voter_stop_asking_candidate_campaign_view(request, candidate_campaign_id):
     print "voter_stop_asking_candidate_campaign_view {candidate_campaign_id}".format(
         candidate_campaign_id=candidate_campaign_id)
+    voter_device_id = get_voter_device_id(request)
+    voter_id = fetch_voter_id_from_voter_device_link(voter_device_id)
+
     return JsonResponse({0: "not working yet - needs to be built"})
 
 
@@ -70,7 +85,8 @@ def voter_stance_for_candidate_campaign_view(request, candidate_campaign_id):
     # print "voter_stance_for_candidate_campaign_view {candidate_campaign_id}".format(
     #     candidate_campaign_id=candidate_campaign_id)
     voter_device_id = get_voter_device_id(request)
-    voter_id = 1
+    voter_id = fetch_voter_id_from_voter_device_link(voter_device_id)
+
     position_entered_manager = PositionEnteredManager()
     results = position_entered_manager.retrieve_voter_candidate_campaign_position(voter_id, candidate_campaign_id)
     if results['position_found']:
@@ -90,4 +106,7 @@ def voter_stance_for_candidate_campaign_view(request, candidate_campaign_id):
 def voter_stance_for_measure_campaign_view(request, measure_campaign_id):
     print "voter_stance_for_candidate_campaign_view {candidate_campaign_id}".format(
         measure_campaign_id=measure_campaign_id)
+    voter_device_id = get_voter_device_id(request)
+    voter_id = fetch_voter_id_from_voter_device_link(voter_device_id)
+
     return JsonResponse({0: "not working yet - needs to be built"})

@@ -35,7 +35,7 @@ class ContestOffice(models.Model):
     # vote_type (ranked choice, majority)
 
     # ballot_placement: NOTE - even though GoogleCivicContestOffice has this field, we store this value
-    #  in the BallotItemCache table instead because it is different for each voter
+    #  in the BallotItem table instead because it is different for each voter
 
     # The number of candidates that a voter may vote for in this contest.
     number_voting_for = models.CharField(verbose_name="number of candidates to vote for",
@@ -130,7 +130,7 @@ class ContestMeasure(models.Model):
     # The unique ID of the election containing this contest. (Provided by Google Civic)
     google_civic_election_id = models.CharField(verbose_name="election id", max_length=254, null=False, blank=False)
     # ballot_placement: NOTE - even though GoogleCivicContestOffice has this field, we store this value
-    #  in the BallotItemCache table instead because it is different for each voter
+    #  in the BallotItem table instead because it is different for each voter
     # If this is a partisan election, the name of the party it is for.
     primary_party = models.CharField(verbose_name="primary party", max_length=254, null=True, blank=True)
     # The name of the district.
@@ -181,12 +181,13 @@ class MeasureCampaign(models.Model):
     phone = models.CharField(verbose_name="campaign email", max_length=254, null=True, blank=True)
 
 
-class BallotItemCache(models.Model):
+class BallotItem(models.Model):
     """
-    This is a generated table from Google Civic data (and Azavea Cicero in the future)
+    This is a generated table with ballot item data from a variety of sources, including Google Civic
+    (and MapLight, Ballot API Code for America project, and Azavea Cicero in the future)
     """
-    # The unique id of the voter   # TODO temp default
-    voter_id = models.IntegerField(verbose_name="the voter unique id", default=1, null=False, blank=False)
+    # The unique id of the voter
+    voter_id = models.IntegerField(verbose_name="the voter unique id", default=0, null=False, blank=False)
     # The We Vote unique ID of this election
     election_id = models.CharField(verbose_name="election id", max_length=20, null=True)
     # The unique ID of this election. (Provided by Google Civic)
@@ -220,17 +221,26 @@ class BallotItemCache(models.Model):
         candidates_list_temp = candidates_list_temp.filter(contest_office_id=self.contest_office_id)
         return candidates_list_temp
 
+class BallotItemManager(models.Model):
 
-# NOTE: This method only needs to hit the database at most once per day.
-# We should cache the results in a JSON file that gets cached on the server and locally in the
-# voter's browser for speed.
-def retrieve_my_ballot(voter_on_stage, election_on_stage):
-    # Retrieve all of the jurisdictions the voter is in
+    def retrieve_all_ballot_items_for_voter(self, voter_id, election_id=0):
+        ballot_item_list = BallotItem.objects.order_by('ballot_item_label')
 
-    # Retrieve all of the office_contests in each of those jurisdictions
+        results = {
+            'ballot_item_list': ballot_item_list,
+        }
+        return results
 
-    # Retrieve all of the measure_contests in each of those jurisdictions
-    return True
+    # NOTE: This method only needs to hit the database at most once per day.
+    # We should cache the results in a JSON file that gets cached on the server and locally in the
+    # voter's browser for speed.
+    def retrieve_my_ballot(voter_on_stage, election_on_stage):
+        # Retrieve all of the jurisdictions the voter is in
+
+        # Retrieve all of the office_contests in each of those jurisdictions
+
+        # Retrieve all of the measure_contests in each of those jurisdictions
+        return True
 
 class CandidateCampaignManager(models.Model):
 

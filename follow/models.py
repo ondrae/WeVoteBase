@@ -27,7 +27,7 @@ class FollowOrganization(models.Model):
     following_status = models.CharField(max_length=15, choices=FOLLOWING_CHOICES, default=FOLLOWING)
 
     # The date the voter followed or stopped following this organization
-    date_last_changed = models.DateTimeField(verbose_name='date last changed', null=True)
+    date_last_changed = models.DateTimeField(verbose_name='date last changed', null=True, auto_now=True)
 
     def __unicode__(self):
         return self.organization_id
@@ -79,7 +79,8 @@ class FollowOrganizationManager(models.Model):
             # Update this follow_organization entry with new values - we do not delete because we might be able to use
             try:
                 follow_organization_on_stage.following_status = following_status
-                # follow_organization_on_stage.date_last_changed = ??? TODO How to update date?
+                # We don't need to update here because set set auto_now=True in the field
+                # follow_organization_on_stage.date_last_changed =
                 follow_organization_on_stage.save()
                 follow_organization_on_stage_id = follow_organization_on_stage.id
                 follow_organization_on_stage_found = True
@@ -99,7 +100,8 @@ class FollowOrganizationManager(models.Model):
                         voter_id=voter_id,
                         organization_id=organization_id,
                         following_status=following_status,
-                        # date_last_changed=date_last_changed, ??? TODO How to update date?
+                        # We don't need to update here because set set auto_now=True in the field
+                        # date_last_changed =
                     )
                     follow_organization_on_stage.save()
                     follow_organization_on_stage_id = follow_organization_on_stage.id

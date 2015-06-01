@@ -68,17 +68,17 @@ def get_voter_device_id(request, generate_if_no_cookie=False):
         voter_device_id = request.COOKIES['voter_device_id']
         # print "from cookie, voter_device_id: {voter_device_id}".format(voter_device_id=voter_device_id)
     if voter_device_id == '' and generate_if_no_cookie:
-        voter_device_id = random_string_generator()  # Stored in cookie below
+        voter_device_id = generate_voter_device_id()  # Stored in cookie below
         # If we set this here, we won't know whether we need to store the cookie in set_voter_device_id
         # request.COOKIES['voter_device_id'] = voter_device_id  # Set it here for use in the remainder of this page load
-        # print "random_string_generator, voter_device_id: {voter_device_id}".format(voter_device_id=voter_device_id)
+        # print "generate_voter_device_id, voter_device_id: {voter_device_id}".format(voter_device_id=voter_device_id)
     return voter_device_id
 
 def set_voter_device_id(request, response, voter_device_id):
     if 'voter_device_id' not in request.COOKIES:
         set_cookie(response, 'voter_device_id', voter_device_id)
 
-def random_string_generator(string_length=88, chars=string.ascii_lowercase + string.ascii_uppercase + string.digits):
+def generate_random_string(string_length=88, chars=string.ascii_lowercase + string.ascii_uppercase + string.digits):
     """
     Generate a random string.
     :param string_length:
@@ -87,3 +87,20 @@ def random_string_generator(string_length=88, chars=string.ascii_lowercase + str
     """
     return ''.join(random.SystemRandom().choice(chars) for _ in range(string_length))
 
+def generate_voter_device_id():
+    # We would like this device_id to be long so hackers can't cycle through all possible device ids to get access to
+    # a voter's sign in session. As of this writing, all 8 digit strings can be cracked locally in 5.5 hours given the
+    # right hardware:
+    # http://arstechnica.com/security/2012/12/25-gpu-cluster-cracks-every-standard-windows-password-in-6-hours/
+    # But there are limits to how much cookie real-estate every site has.
+    # See: http://browsercookielimits.squawky.net/ If you use characters only in the ASCII range, each character
+    # takes 1 byte, so you can typically store 4096 characters
+    # We use 88 characters to secure us for the foreseeable future, which gives us a unique identifier space of
+    # 2.79 with 124 zeros after it
+    #  26 + 26 + 10 = 62 character options per "digit"
+    #  88(62) = 2.798279e+124
+    new_device_id = generate_random_string(88)
+
+    # Check that this device_id isn't already in the database
+    # TODO Implement the check
+    return new_device_id

@@ -15,7 +15,8 @@ from follow.models import FollowOrganizationManager
 from organization.models import Organization
 from position.models import Position, PositionEntered, PositionEnteredManager, NO_STANCE, INFORMATION_ONLY, OPPOSE, \
     STILL_DECIDING, SUPPORT
-from wevote_functions.models import convert_to_int
+from voter.models import fetch_voter_id_from_voter_device_link
+from wevote_functions.models import convert_to_int, get_voter_device_id
 
 ORGANIZATION_STANCE_CHOICES = (
     (SUPPORT,           'We Support'),
@@ -438,11 +439,12 @@ def organization_save_new_or_edit_existing_position_process_form_view(request):
 
     return HttpResponseRedirect(reverse('organization:organization_position_list', args=([organization_id])))
 
-
 def organization_follow_view(request, organization_id):
     print "organization_follow_view {organization_id}".format(
         organization_id=organization_id)
-    voter_id = 1
+    voter_device_id = get_voter_device_id(request)
+    voter_id = fetch_voter_id_from_voter_device_link(voter_device_id)
+
     follow_organization_manager = FollowOrganizationManager()
     results = follow_organization_manager.toggle_on_voter_following_organization(voter_id, organization_id)
     if results['success']:
@@ -454,7 +456,9 @@ def organization_follow_view(request, organization_id):
 def organization_unfollow_view(request, organization_id):
     print "organization_unfollow_view {organization_id}".format(
         organization_id=organization_id)
-    voter_id = 1
+    voter_device_id = get_voter_device_id(request)
+    voter_id = fetch_voter_id_from_voter_device_link(voter_device_id)
+
     follow_organization_manager = FollowOrganizationManager()
     results = follow_organization_manager.toggle_off_voter_following_organization(voter_id, organization_id)
     if results['success']:

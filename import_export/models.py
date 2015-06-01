@@ -6,7 +6,7 @@ from django.db import models
 from exception.models import handle_exception, handle_record_not_found_exception, handle_record_not_saved_exception
 from politician.models import Politician
 from election_office_measure.models import Election, ContestOffice, CandidateCampaign, ContestMeasure, \
-    MeasureCampaign, BallotItemCache
+    MeasureCampaign, BallotItem
 from import_export_theunitedstatesio.models import import_legislators_current_csv, TheUnitedStatesIoLegislatorCurrent
 from import_export_google_civic.models import GoogleCivicElection, GoogleCivicContestOffice, \
     GoogleCivicCandidateCampaign, GoogleCivicContestReferendum
@@ -187,7 +187,7 @@ def transfer_google_civic_voterinfo_cached_data_to_wevote_tables():
 
     # MeasureCampaign
 
-    # Populate BallotItemCache
+    # Populate BallotItem
 
 
 def google_civic_save_election():
@@ -418,8 +418,8 @@ def google_civic_get_or_create_contest_office(google_civic_candidate_campaign_en
 
         # Save the ballot_placement
         # Try to find earlier version based on the google_civic_election_id identifier
-        # print "Retrieving BallotItemCache"
-        ballot_item_query = BallotItemCache.objects.all()
+        # print "Retrieving BallotItem"
+        ballot_item_query = BallotItem.objects.all()
         ballot_item_query = ballot_item_query.filter(voter_id=1)
         ballot_item_query = ballot_item_query.filter(google_civic_election_id=google_civic_contest_office_on_stage.google_civic_election_id)
         ballot_item_query = ballot_item_query.filter(contest_office_id=contest_office_on_stage.id)
@@ -436,8 +436,8 @@ def google_civic_get_or_create_contest_office(google_civic_candidate_campaign_en
             ballot_item_on_stage.election_id = election_on_stage.id
             # TODO Add all values here
         else:
-            # print "Creating BallotItemCache"
-            ballot_item_on_stage = BallotItemCache(
+            # print "Creating BallotItem"
+            ballot_item_on_stage = BallotItem(
                 voter_id=1,
                 election_id=election_on_stage.id,
                 google_civic_election_id=google_civic_contest_office_on_stage.google_civic_election_id,

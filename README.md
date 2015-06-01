@@ -11,15 +11,23 @@ We are currently taking in ballot data from:
 
 We will be importing data from many sources, including:
 
+* Ballot API: https://github.com/sfbrigade/ballotapi
+* SF Base Election Data (SFBED): https://github.com/cjerdonek/sf-base-election-data
 * MapLight.com (Voter's Edge)
 * VoteSmart.org
 * The Sunlight Foundation's Open Civic Data project
-* Azavea's Cicero API
+* Azavea's Cicero API, for identifying the voting districts any voter is in, so we know what ballot data to display. See: http://www.azavea.com/products/cicero/
+* Catalist.us, for access to 270+ Million Voter Files
+* Nationbuilder.com, for access to Voter Files
 * Twitter
 * Facebook
 * See http://www.ElectionDataSummary.org for links to a variety of election data sources we are exploring
 
 Our approach is to write importers that take data from these sources into a local database, and then merge that data into a We Vote database structure so we can deliver a complete ballot to any American voter. 
+
+### Live Demo
+
+You can see a live demo for a San Francisco ballot here: http://my.wevoteeducation.org/
 
 ### Join Us - Contributing to We Vote Base
 Please reach out to us if you would like to help or have any questions: 
@@ -28,7 +36,9 @@ http://www.wevoteeducation.org/#contact-us
 To see what we are currently working on, see our Pivotal tracker:
 https://www.pivotaltracker.com/n/projects/1346856
 
-You may join our Google Group here for questions about election related data: https://groups.google.com/forum/#!forum/electiondata
+Join our Google Group here to discuss the We Vote Base application (creating a social ballot): https://groups.google.com/forum/#!forum/wevoteengineering
+
+You may join our Google Group here for questions about election related data (importing and exporting): https://groups.google.com/forum/#!forum/electiondata
 
 ### Setup - Dependencies
 
@@ -47,11 +57,11 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### Setup - Configuration
+### Setup - Local Configuration
 
 Change your local database configuration settings in (Search for "DATABASES") if you so desire:
 
-wevotebase/settings.py
+wevotebase/settings.py (Also see "Heroku Configuration" below)
 
 Populate your database with the latest database tables:
 
@@ -72,6 +82,12 @@ Creating an admin user. First we’ll need to create a user who can login to the
 python manage.py createsuperuser
 ```
 
+### Setup - Heroku Configuration
+
+We use Heroku for publishing a public version anyone can play with (see "Live Demo" above), and you can publish a public version too. Here are the instructions: https://devcenter.heroku.com/articles/getting-started-with-django
+
+In the wevotebase/setting.py file, search for "Heroku". There are comments that tell you which parts of the settings file to comment or uncomment to get a version running on Heroku.
+
 ### Import Test Data
 
 Start up the webserver:
@@ -80,11 +96,13 @@ Start up the webserver:
 python manage.py runserver
 ```
 
-Visit the site here: http://localhost:8000/
+Visit the site here: http://localhost:8000/ux_oak/start
 
 Click on the "Import Tools" link, and import all data under Step 1. Transfer data to the We Vote tables under Step 2.
 
-Now go back to the root http://localhost:8000/ and click on the "My Ballot" link. You should be taken to a San Francisco ballot.
+Please note: We are working on exporting/importing endorsement information (endorsing Organizations, as well as their Endorsements)
+
+Now go back to the root http://localhost:8000/ and you should be taken to a San Francisco ballot.
 
 ### Coding Standards
 

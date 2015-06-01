@@ -12,7 +12,8 @@ from exception.models import handle_exception, handle_exception_silently, handle
 from follow.models import FollowOrganizationList
 from organization.models import OrganizationManager
 from position.models import SUPPORT, NO_STANCE, INFORMATION_ONLY, STILL_DECIDING, OPPOSE, PositionListForCandidateCampaign
-from wevote_functions.models import convert_to_int
+from voter.models import fetch_voter_id_from_voter_device_link
+from wevote_functions.models import convert_to_int, get_voter_device_id
 
 
 def positions_related_to_candidate_campaign_view(request, candidate_campaign_id, stance_we_are_looking_for):
@@ -34,14 +35,15 @@ def positions_related_to_candidate_campaign_view(request, candidate_campaign_id,
         position_list_manager.retrieve_all_positions_for_candidate_campaign(
             candidate_campaign_id, stance_we_are_looking_for)
 
-    voter_id = 1
+    voter_device_id = get_voter_device_id(request)
+    voter_id = fetch_voter_id_from_voter_device_link(voter_device_id)
 
     follow_organization_list_manager = FollowOrganizationList()
     organizations_followed_by_voter = \
         follow_organization_list_manager.retrieve_follow_organization_info_for_voter_simple_array(voter_id)
 
     positions_followed = position_list_manager.calculate_positions_followed_by_voter(
-        all_positions_list_for_candidate_campaign, organizations_followed_by_voter)
+        voter_id, all_positions_list_for_candidate_campaign, organizations_followed_by_voter)
 
     positions_not_followed = position_list_manager.calculate_positions_not_followed_by_voter(
         all_positions_list_for_candidate_campaign, organizations_followed_by_voter)
@@ -56,78 +58,6 @@ def positions_related_to_candidate_campaign_view(request, candidate_campaign_id,
         candidate_campaign_id, stance_we_are_looking_for, positions_followed, positions_not_followed)
 
     return JsonResponse({0: position_html})
-
-# Version 1 of this method
-# def assemble_candidate_campaign_position_stance_html(position_support_list_for_candidate_campaign,
-#                                                      stance_we_are_looking_for, candidate_campaign_id):
-#     # Cycle through these positions and put together a line about who is supporting, opposing, have information
-#     #  or are still deciding
-#     stance_html = ""
-#     is_first = True
-#     number_of_stances_counter = 0
-#     number_of_stances_found = len(position_support_list_for_candidate_campaign)
-#     only_you = False
-#     for position in position_support_list_for_candidate_campaign:
-#         if is_first:
-#             stance_html += ""
-#         else:
-#             is_next_to_last = number_of_stances_counter == number_of_stances_found - 1
-#             stance_html += " and " if is_next_to_last else ", "
-#         is_first = False
-#
-#         popup_box_title_verb = display_stance_we_are_looking_for_title(
-#             stance_we_are_looking_for, number_of_stances_found)
-#
-#         candidate_campaign_manager = CandidateCampaignManager()
-#         results = candidate_campaign_manager.retrieve_candidate_campaign_from_id(candidate_campaign_id)
-#         if results['candidate_campaign_found']:
-#             candidate_campaign = results['candidate_campaign']
-#             popup_box_title_candidate_name = candidate_campaign.candidate_name
-#         else:
-#             popup_box_title_candidate_name = ""
-#
-#         popup_box_title = popup_box_title_verb+" "+popup_box_title_candidate_name
-#         if stance_we_are_looking_for == SUPPORT:
-#             # This is the class we reference with jquery for opening a div popup to display the supporters
-#             class_used_to_open_popup = "candidate_campaign_"+candidate_campaign_id+"_supporters"
-#             # This is the URL that returns the supporters for this candidate
-#             retrieve_positions_url = "/pos/cand/"+candidate_campaign_id+"/supporters"
-#         elif stance_we_are_looking_for == OPPOSE:
-#             class_used_to_open_popup = "candidate_campaign_"+candidate_campaign_id+"_opposers"
-#             retrieve_positions_url = "/pos/cand/"+candidate_campaign_id+"/opposers"
-#         elif stance_we_are_looking_for == INFORMATION_ONLY:
-#             class_used_to_open_popup = "candidate_campaign_"+candidate_campaign_id+"_infoonly"
-#             retrieve_positions_url = "/pos/cand/"+candidate_campaign_id+"/infoonly"
-#         elif stance_we_are_looking_for == STILL_DECIDING:
-#             class_used_to_open_popup = "candidate_campaign_"+candidate_campaign_id+"_deciders"
-#             retrieve_positions_url = "/pos/cand/"+candidate_campaign_id+"/deciders"
-#         else:
-#             class_used_to_open_popup = ''
-#             retrieve_positions_url = ''
-#
-#         if position.organization_id > 0:
-#             organization_on_stage = Organization()
-#             # TODO Convert this to results so we can catch errors?
-#             organization_on_stage = organization_on_stage.retrieve_organization(position.organization_id)
-#
-#             stance_html += "<a class='{link_class}' href='{link_href}' id='{popup_box_title}'>{organization_name}</a>".format(
-#                 link_class=class_used_to_open_popup,
-#                 link_href=retrieve_positions_url,
-#                 organization_name=organization_on_stage.name,
-#                 popup_box_title=popup_box_title,
-#             )
-#             number_of_stances_counter += 1
-#         elif position.voter_id > 0:
-#             stance_html += "You"
-#             number_of_stances_counter += 1
-#             if number_of_stances_found == 1:
-#                 only_you = True
-#     if number_of_stances_found:
-#         verb_text = display_stance_we_are_looking_for(stance_we_are_looking_for, number_of_stances_found, only_you)
-#         if verb_text:
-#             stance_html += " <span class='position_stance_verb'>{verb_text}</span>".format(verb_text=verb_text)
-#
-#     return stance_html
 
 
 def assemble_candidate_campaign_stance_html(
@@ -448,18 +378,19 @@ def positions_display_list_related_to_candidate_campaign(request, candidate_camp
         position_list_manager.retrieve_all_positions_for_candidate_campaign(
             candidate_campaign_id, stance_we_are_looking_for)
 
-    voter_id = 1
+    voter_device_id = get_voter_device_id(request)
+    voter_id = fetch_voter_id_from_voter_device_link(voter_device_id)
 
     follow_organization_list_manager = FollowOrganizationList()
     organizations_followed_by_voter = \
         follow_organization_list_manager.retrieve_follow_organization_info_for_voter_simple_array(voter_id)
 
     if show_only_followed_positions == 1:
-        print "positions_display_list: show only followed positions"
+        # print "positions_display_list: show only followed positions"
         list_to_display = position_list_manager.calculate_positions_followed_by_voter(
-            all_positions_list_for_candidate_campaign, organizations_followed_by_voter)
+            voter_id, all_positions_list_for_candidate_campaign, organizations_followed_by_voter)
     elif show_only_not_followed_positions == 1:
-        print "positions_display_list: show only NOT followed positions"
+        # print "positions_display_list: show only NOT followed positions"
         list_to_display = position_list_manager.calculate_positions_not_followed_by_voter(
             all_positions_list_for_candidate_campaign, organizations_followed_by_voter)
     else:

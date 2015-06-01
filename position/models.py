@@ -9,8 +9,7 @@ from exception.models import handle_exception, handle_exception_silently, handle
     handle_record_not_found_exception, handle_record_not_saved_exception
 from organization.models import Organization
 from twitter.models import TwitterUser
-from django.contrib.auth.models import User
-from voter.models import Voter  # Replace User with this once we have figured out User -> Voter object linking
+from voter.models import Voter
 
 SUPPORT = 'SUPPORT'
 STILL_DECIDING = 'STILL_DECIDING'
@@ -234,22 +233,23 @@ class PositionListForCandidateCampaign(models.Model):
             return organization_position_list
 
     def calculate_positions_followed_by_voter(
-            self, all_positions_list_for_candidate_campaign, organizations_followed_by_voter):
+            self, voter_id, all_positions_list_for_candidate_campaign, organizations_followed_by_voter):
         """
         We need a list of positions that were made by an organization that this voter follows
         :param all_positions_list_for_candidate_campaign:
         :param organizations_followed_by_voter:
         :return:
         """
-        this_voter_id = 1
+
         positions_followed_by_voter = []
         # Only return the positions if they are from organizations the voter follows
         for position in all_positions_list_for_candidate_campaign:
-            if position.voter_id == this_voter_id:  # TODO DALE Is this the right way to do this?
+            if position.voter_id == voter_id:  # We include the voter currently viewing the ballot in this list
                 positions_followed_by_voter.append(position)
+            # TODO Include a check against a list of "people_followed_by_voter" so we can include friends
             elif position.organization_id in organizations_followed_by_voter:
-                print "position {position_id} followed by voter (org {org_id})".format(
-                    position_id=position.id, org_id=position.organization_id)
+                # print "position {position_id} followed by voter (org {org_id})".format(
+                #     position_id=position.id, org_id=position.organization_id)
                 positions_followed_by_voter.append(position)
 
         return positions_followed_by_voter
@@ -268,8 +268,8 @@ class PositionListForCandidateCampaign(models.Model):
             # Some positions are for individual voters, so we want to filter those out
             if position.organization_id \
                     and position.organization_id not in organizations_followed_by_voter:
-                print "position {position_id} NOT followed by voter (org {org_id})".format(
-                    position_id=position.id, org_id=position.organization_id)
+                # print "position {position_id} NOT followed by voter (org {org_id})".format(
+                #     position_id=position.id, org_id=position.organization_id)
                 positions_not_followed_by_voter.append(position)
 
         return positions_not_followed_by_voter
