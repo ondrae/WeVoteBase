@@ -3,8 +3,7 @@
 # -*- coding: UTF-8 -*-
 
 from django.db import models
-from exception.models import handle_exception, handle_exception_silently, handle_record_found_more_than_one_exception,\
-    handle_record_not_found_exception, handle_record_not_saved_exception
+from exception.models import handle_exception_silently, handle_record_found_more_than_one_exception
 from wevote_settings.models import fetch_next_id_we_vote_last_candidate_campaign_integer, \
     fetch_next_id_we_vote_last_contest_measure_integer, fetch_next_id_we_vote_last_contest_office_integer, \
     fetch_next_id_we_vote_last_measure_campaign_integer, fetch_site_unique_id_prefix
@@ -315,12 +314,15 @@ class BallotItem(models.Model):
         candidates_list_temp = candidates_list_temp.filter(contest_office_id=self.contest_office_id)
         return candidates_list_temp
 
+
 class BallotItemManager(models.Model):
 
     def retrieve_all_ballot_items_for_voter(self, voter_id, election_id=0):
         ballot_item_list = BallotItem.objects.order_by('ballot_item_label')
 
         results = {
+            'election_id':      election_id,
+            'voter_id':         voter_id,
             'ballot_item_list': ballot_item_list,
         }
         return results
@@ -335,6 +337,7 @@ class BallotItemManager(models.Model):
 
         # Retrieve all of the measure_contests in each of those jurisdictions
         return True
+
 
 class CandidateCampaignManager(models.Model):
 
