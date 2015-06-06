@@ -104,6 +104,7 @@ Thumbs.db
 # Other #
 #########
 .idea
+migrations
 
 # Heroku Related #
 ##################
