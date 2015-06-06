@@ -104,7 +104,8 @@ Thumbs.db
 # Other #
 #########
 .idea
-migrations
+migrations/
+!migrations/__init__.py
 
 # Heroku Related #
 ##################
