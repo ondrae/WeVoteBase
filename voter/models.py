@@ -202,13 +202,12 @@ class Voter(AbstractBaseUser):
 
     # We override the save function to allow for the email field to be empty. If NOT empty, email must be unique.
     def save(self, *args, **kwargs):
-        self.email = self.email.lower().strip()
-        if self.email != "":  # If there is a value...
+        if self.email:
+            self.email = self.email.lower().strip()
             if not validate_email(self.email):  # ...make sure it is a valid email
                 # If it isn't a valid email, don't save the value as an email -- just save a blank field
-                self.email = ""
-        if self.email == "":
-            self.email = None
+                self.email = None
+
         super(Voter, self).save(*args, **kwargs)
 
     def get_full_name(self):
