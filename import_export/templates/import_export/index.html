@@ -7,8 +7,7 @@
 
 <h1>Import from Other Data Sources</h1>
 
-<h2>Step 1: Import Data in Files into Local Database Cache Tables</h2>
-<p>Bring data in from these sources, into the local database cache:
+<p>Bring data in from these sources, into the local database cache:</p>
 <ul>
     <li>TheUnitedStates.io
     (<a href="{% url 'import_export_theunitedstatesio:import_theunitedstatesio_from_csv' %}">import csv now</a>)
@@ -16,6 +15,7 @@
             <li>Legislators, Current</li>
         </ul>
     </li>
+
     <li>Google Civic API
     (<a href="{% url 'import_export_google_civic:import_voterinfo_from_json' %}">import json now</a>)
         <ul>
@@ -23,11 +23,17 @@
         </ul>
     </li>
 
-</ul>
-</p>
+    <li>Sample Voting Info Project XML File
+    (<a href="{% url 'import_export_voting_info_project:import_voting_info_project_from_xml_view' %}">import XML now</a>)
+        <ul>
+            <li>XML Sample Data</li>
+        </ul>
+    </li>
 
-<h2>Step 2: Transfer Data from Local Database Cache Tables into We Vote Data Structures</h2>
-<p>Take the data cached locally and distribute it to the correct local We Vote db tables:
+</ul>
+
+
+<p>Take the data cached locally and distribute it to the correct local We Vote db tables:</p>
 <ul>
 <li>TheUnitedStates.io
     (<a href="{% url 'import_export:transfer_from_theunitedstatesio' %}">transfer now</a>)
@@ -43,7 +49,7 @@
     </ul>
 </li>
 </ul>
-</p>
+
 
 <p><a href="{% url 'import_export:import_sample_positions' %}">Import sample Positions Data</a></p>
 
