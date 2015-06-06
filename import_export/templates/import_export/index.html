@@ -1,7 +1,9 @@
-{% load staticfiles %}
-{% load bootstrap3 %}
+{# import_export/templates/import_export/index.html #}
+{% extends "we_vote_base.html" %}
 
-<link rel="stylesheet" type="text/css" href="{% static 'import_export/style.css' %}" />
+{% block title %}Import Export Options{% endblock %}
+
+{%  block content %}
 
 <h1>Import from Other Data Sources</h1>
 
@@ -43,4 +45,7 @@
 </ul>
 </p>
 
+<p><a href="{% url 'import_export:import_sample_positions' %}">Import sample Positions Data</a></p>
+
 {# TODO: Correct the url <p><a href="{% url 'start:ux_oak' %}">Back to home</a></p>  #}
+{% endblock %}

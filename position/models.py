@@ -10,6 +10,7 @@ from exception.models import handle_exception, handle_exception_silently, handle
 from organization.models import Organization
 from twitter.models import TwitterUser
 from voter.models import Voter
+from wevote_settings.models import fetch_next_id_we_vote_last_position_integer, fetch_site_unique_id_prefix
 
 SUPPORT = 'SUPPORT'
 STILL_DECIDING = 'STILL_DECIDING'
@@ -34,12 +35,21 @@ class PositionEntered(models.Model):
     """
     # We are relying on built-in Python id field
 
+    # The id_we_vote identifier is unique across all We Vote sites, and allows us to share our org info with other
+    # organizations
+    # It starts with "wv" then we add on a database specific identifier like "3v" (WeVoteSetting.site_unique_id_prefix)
+    # then the string "pos", and then a sequential integer like "123".
+    # We keep the last value in WeVoteSetting.id_we_vote_last_position_integer
+    id_we_vote = models.CharField(
+        verbose_name="we vote permanent id", max_length=255, default=None, null=True, blank=True, unique=True)
+
     # The id for the generated position that this PositionEntered entry influences
     position_id = models.BigIntegerField(null=True, blank=True)
 
     date_entered = models.DateTimeField(verbose_name='date entered', null=True)
     # The organization this position is for
     organization_id = models.BigIntegerField(null=True, blank=True)
+
     # The voter expressing the opinion
     voter_id = models.BigIntegerField(null=True, blank=True)
     # The election this position is for
@@ -104,6 +114,25 @@ class PositionEntered(models.Model):
     class Meta:
         ordering = ('date_entered',)
 
+    # We override the save function so we can auto-generate id_we_vote
+    def save(self, *args, **kwargs):
+        # Even if this organization came from another source we still need a unique id_we_vote
+        if self.id_we_vote:
+            self.id_we_vote = self.id_we_vote.strip()
+        if self.id_we_vote == "" or self.id_we_vote is None:  # If there isn't a value...
+            # ...generate a new id
+            site_unique_id_prefix = fetch_site_unique_id_prefix()
+            next_local_integer = fetch_next_id_we_vote_last_position_integer()
+            # "wv" = We Vote
+            # site_unique_id_prefix = a generated (or assigned) unique id for one server running We Vote
+            # "org" = tells us this is a unique id for an org
+            # next_integer = a unique, sequential integer for this server - not necessarily tied to database id
+            self.id_we_vote = "wv{site_unique_id_prefix}pos{next_integer}".format(
+                site_unique_id_prefix=site_unique_id_prefix,
+                next_integer=next_local_integer,
+            )
+        super(PositionEntered, self).save(*args, **kwargs)
+
     def is_support(self):
         if self.stance == SUPPORT:
             return True
@@ -154,6 +183,34 @@ class PositionEntered(models.Model):
             print "position.candidate_campaign did not find"
             return None
         return organization
+
+    def organization_id_we_vote(self):
+        try:
+            organization_on_stage = Organization.objects.get(id=self.organization_id)
+            if organization_on_stage.id_we_vote:
+                return organization_on_stage.id_we_vote
+        except Exception as e:
+            handle_exception_silently(e)
+        return ''
+
+    def candidate_campaign_id_we_vote(self):
+        try:
+            candidate_campaign_on_stage = CandidateCampaign.objects.get(id=self.candidate_campaign_id)
+            if candidate_campaign_on_stage.id_we_vote:
+                return candidate_campaign_on_stage.id_we_vote
+        except Exception as e:
+            handle_exception_silently(e)
+        return ''
+
+    def measure_campaign_id_we_vote(self):
+        try:
+            measure_campaign_on_stage = Organization.objects.get(id=self.measure_campaign_id)
+            if measure_campaign_on_stage.id_we_vote:
+                return measure_campaign_on_stage.id_we_vote
+        except Exception as e:
+            handle_exception_silently(e)
+        return ''
+
 
 class Position(models.Model):
     """
@@ -214,6 +271,7 @@ class PositionListForCandidateCampaign(models.Model):
         # TODO Error check stance_we_are_looking_for
 
         # Retrieve the support positions for this candidate_campaign_id
+        organization_position_list = PositionEntered()
         organization_position_list_found = False
         try:
             organization_position_list = PositionEntered.objects.order_by('date_entered')
@@ -394,7 +452,6 @@ class PositionEnteredManager(models.Model):
         voter_position_on_stage_found = False
         position_id = 0
         if results['position_found']:
-            print "yay!"
             voter_position_on_stage = results['position']
 
             # Update this position with new values

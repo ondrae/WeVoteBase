@@ -2,8 +2,9 @@
 # Brought to you by We Vote. Be good.
 # -*- coding: UTF-8 -*-
 
-import datetime, string, random
-
+import datetime
+import random
+import string
 
 # Create your models here.
 class switch(object):

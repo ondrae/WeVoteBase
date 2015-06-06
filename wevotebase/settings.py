@@ -61,12 +61,14 @@ INSTALLED_APPS = (
     'politician',
     'position',
     'region_jurisdiction',
+    'rest_framework',
     'support_oppose_deciding',
     'tag',
     'twitter',
     'utils',
     'ux_oak',  # The business logic for this particular version of We Vote
     'wevote_functions',
+    'wevote_settings',
     'voter',  # See also AUTH_USER_MODEL in wevotebase/settings.py
 )
 

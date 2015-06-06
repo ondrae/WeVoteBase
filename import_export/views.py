@@ -2,11 +2,23 @@
 # Brought to you by We Vote. Be good.
 # -*- coding: UTF-8 -*-
 
+from django.contrib import messages
+from django.contrib.messages import get_messages
+from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
-
-from politician.models import Politician
 from import_export.models import transfer_google_civic_voterinfo_cached_data_to_wevote_tables, \
-    transfer_theunitedstatesio_cached_data_to_wevote_tables
+    transfer_theunitedstatesio_cached_data_to_wevote_tables, import_we_vote_organizations_from_json, \
+    import_we_vote_candidate_campaigns_from_json, import_we_vote_positions_from_json
+from import_export.serializers import CandidateCampaignSerializer, OrganizationSerializer, PositionSerializer
+from election_office_measure.models import CandidateCampaign, ContestMeasure, ContestOffice, MeasureCampaign
+from organization.models import Organization
+from politician.models import Politician
+from position.models import PositionEntered
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
 
 
 # http://localhost:8000/import_export/
@@ -14,9 +26,10 @@ def import_export_index(request):
     """
     Provide an index of import/export actions (for We Vote data maintenance)
     """
+    messages_on_stage = get_messages(request)
 
     template_values = {
-
+        'messages_on_stage':    messages_on_stage,
     }
     return render(request, 'import_export/index.html', template_values)
 
@@ -55,3 +68,81 @@ def import_export_transfer_theunitedstatesio_to_local_tables_view(request):
         'politician_list': Politician.objects.order_by('last_name'),
     }
     return render(request, 'import_export/transfer_from_theunitedstatesio.html', template_values)
+#
+#
+# def ValuesQuerySetToDict(data):
+#     return [item for item in data]
+
+
+def update_all_id_we_vote(request):
+    """
+    We just want to cycle through each of these data types and save so we populate the field id_we_vote
+    :param request:
+    :return:
+    """
+    candidate_campaign_list = CandidateCampaign.objects.all()
+    for candidate_campaign in candidate_campaign_list:
+        candidate_campaign.save()
+
+    contest_measure_list = ContestMeasure.objects.all()
+    for contest_measure in contest_measure_list:
+        contest_measure.save()
+
+    contest_office_list = ContestOffice.objects.all()
+    for contest_office in contest_office_list:
+        contest_office.save()
+
+    measure_campaign_list = MeasureCampaign.objects.all()
+    for measure_campaign in measure_campaign_list:
+        measure_campaign.save()
+
+    organization_list = Organization.objects.all()
+    for organization in organization_list:
+        organization.save()
+
+    position_list = PositionEntered.objects.all()
+    for position in position_list:
+        position.save()
+
+
+class ExportOrganizationDataToJson(APIView):
+    def get(self, request, format=None):
+        organization_list = Organization.objects.all()
+        serializer = OrganizationSerializer(organization_list, many=True)
+        return Response(serializer.data)
+
+
+class ExportCandidateCampaignDataToJson(APIView):
+    def get(self, request, format=None):
+        candidate_campaign_list = CandidateCampaign.objects.all()
+        serializer = CandidateCampaignSerializer(candidate_campaign_list, many=True)
+        return Response(serializer.data)
+
+
+class ExportPositionDataToJson(APIView):
+    def get(self, request, format=None):
+        position_list = PositionEntered.objects.all()
+        # position_list = position_list.filter(organization_id0) # TODO DALE != ??? How do we do a not equal search
+        serializer = PositionSerializer(position_list, many=True)
+        return Response(serializer.data)
+
+
+def import_we_vote_sample_positions_data_from_json(request):
+    """
+    This gives us sample organizations, candidate campaigns, and positions for testing
+    :return:
+    """
+    import_we_vote_organizations_from_json(request, False)
+
+    # We are importing candidate_campaigns data (and not politician data) because all we are doing is making sure we
+    #  sync to the same We Vote ID. This is critical so we can link Positions to Organization & Candidate Campaign.
+    # At this point (June 2015) we assume the politicians have been imported from Google Civic. We aren't assigning
+    # the politicians a We Vote id, but instead use their full name as the identifier
+    import_we_vote_candidate_campaigns_from_json(request, False)
+
+    import_we_vote_positions_from_json(request, False)
+
+    messages.add_message(request, messages.INFO, 'Positions imported.')
+
+    return HttpResponseRedirect(reverse('import_export:import_export_index', args=()))
+

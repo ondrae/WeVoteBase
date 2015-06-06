@@ -5,6 +5,9 @@
 from django.db import models
 from exception.models import handle_exception, handle_exception_silently, handle_record_found_more_than_one_exception,\
     handle_record_not_found_exception, handle_record_not_saved_exception
+from wevote_settings.models import fetch_next_id_we_vote_last_candidate_campaign_integer, \
+    fetch_next_id_we_vote_last_contest_measure_integer, fetch_next_id_we_vote_last_contest_office_integer, \
+    fetch_next_id_we_vote_last_measure_campaign_integer, fetch_site_unique_id_prefix
 
 
 class Election(models.Model):
@@ -18,6 +21,13 @@ class Election(models.Model):
 
 
 class ContestOffice(models.Model):
+    # The id_we_vote identifier is unique across all We Vote sites, and allows us to share our data with other
+    # organizations
+    # It starts with "wv" then we add on a database specific identifier like "3v" (WeVoteSetting.site_unique_id_prefix)
+    # then the string "off", and then a sequential integer like "123".
+    # We keep the last value in WeVoteSetting.id_we_vote_last_contest_office_integer
+    id_we_vote = models.CharField(
+        verbose_name="we vote permanent id", max_length=255, default=None, null=True, blank=True, unique=True)
     # The name of the office for this contest.
     office_name = models.CharField(verbose_name="google civic office", max_length=254, null=False, blank=False)
     # The We Vote unique id for the election
@@ -55,6 +65,25 @@ class ContestOffice(models.Model):
     # would have id "34" and a scope of stateUpper.
     district_ocd_id = models.CharField(verbose_name="open civic data id", max_length=254, null=False, blank=False)
 
+    # We override the save function so we can auto-generate id_we_vote
+    def save(self, *args, **kwargs):
+        # Even if this data came from another source we still need a unique id_we_vote
+        if self.id_we_vote:
+            self.id_we_vote = self.id_we_vote.strip()
+        if self.id_we_vote == "" or self.id_we_vote is None:  # If there isn't a value...
+            # ...generate a new id
+            site_unique_id_prefix = fetch_site_unique_id_prefix()
+            next_local_integer = fetch_next_id_we_vote_last_contest_office_integer()
+            # "wv" = We Vote
+            # site_unique_id_prefix = a generated (or assigned) unique id for one server running We Vote
+            # "off" = tells us this is a unique id for a ContestOffice
+            # next_integer = a unique, sequential integer for this server - not necessarily tied to database id
+            self.id_we_vote = "wv{site_unique_id_prefix}off{next_integer}".format(
+                site_unique_id_prefix=site_unique_id_prefix,
+                next_integer=next_local_integer,
+            )
+        super(ContestOffice, self).save(*args, **kwargs)
+
 
 class CandidateCampaignList(models.Model):
     """
@@ -71,6 +100,13 @@ class CandidateCampaignList(models.Model):
 
 
 class CandidateCampaign(models.Model):
+    # The id_we_vote identifier is unique across all We Vote sites, and allows us to share our data with other
+    # organizations
+    # It starts with "wv" then we add on a database specific identifier like "3v" (WeVoteSetting.site_unique_id_prefix)
+    # then the string "cand", and then a sequential integer like "123".
+    # We keep the last value in WeVoteSetting.id_we_vote_last_candidate_campaign_integer
+    id_we_vote = models.CharField(
+        verbose_name="we vote permanent id", max_length=255, default=None, null=True, blank=True, unique=True)
     # election link to local We Vote Election entry. During setup we need to allow this to be null.
     election_id = models.IntegerField(verbose_name="election unique identifier", null=True, blank=True)
     # The internal We Vote id for the ContestOffice that this candidate is competing for.
@@ -101,21 +137,34 @@ class CandidateCampaign(models.Model):
     # The voice phone number for the candidate's campaign office.
     phone = models.CharField(verbose_name="candidate campaign email", max_length=254, null=True, blank=True)
 
-    # def position_list(self):
-    #     try:
-    #         position_list = PositionEntered.objects.filter(candidate_campaign_id=self.id)
-    #     except PositionEntered.MultipleObjectsReturned as e:
-    #         handle_record_found_more_than_one_exception(e)
-    #         print "candidate_campaign.position_list Found multiple"
-    #         return None
-    #     except PositionEntered.DoesNotExist as e:
-    #         handle_exception_silently(e)
-    #         print "candidate_campaign.position_list did not find"
-    #         return None
-    #     print "Found candidate campaign. position_list"
-    #     return position_list
+    # We override the save function so we can auto-generate id_we_vote
+    def save(self, *args, **kwargs):
+        # Even if this data came from another source we still need a unique id_we_vote
+        if self.id_we_vote:
+            self.id_we_vote = self.id_we_vote.strip()
+        if self.id_we_vote == "" or self.id_we_vote is None:  # If there isn't a value...
+            # ...generate a new id
+            site_unique_id_prefix = fetch_site_unique_id_prefix()
+            next_local_integer = fetch_next_id_we_vote_last_candidate_campaign_integer()
+            # "wv" = We Vote
+            # site_unique_id_prefix = a generated (or assigned) unique id for one server running We Vote
+            # "cand" = tells us this is a unique id for a CandidateCampaign
+            # next_integer = a unique, sequential integer for this server - not necessarily tied to database id
+            self.id_we_vote = "wv{site_unique_id_prefix}cand{next_integer}".format(
+                site_unique_id_prefix=site_unique_id_prefix,
+                next_integer=next_local_integer,
+            )
+        super(CandidateCampaign, self).save(*args, **kwargs)
+
 
 class ContestMeasure(models.Model):
+    # The id_we_vote identifier is unique across all We Vote sites, and allows us to share our data with other
+    # organizations
+    # It starts with "wv" then we add on a database specific identifier like "3v" (WeVoteSetting.site_unique_id_prefix)
+    # then the string "meas", and then a sequential integer like "123".
+    # We keep the last value in WeVoteSetting.id_we_vote_last_contest_measure_integer
+    id_we_vote = models.CharField(
+        verbose_name="we vote permanent id", max_length=255, default=None, null=True, blank=True, unique=True)
     id_maplight = models.CharField(verbose_name="maplight unique identifier",
                                    max_length=254, null=True, blank=True, unique=True)
     # The title of the measure (e.g. 'Proposition 42').
@@ -143,8 +192,34 @@ class ContestMeasure(models.Model):
     # would have id "34" and a scope of stateUpper.
     district_ocd_id = models.CharField(verbose_name="open civic data id", max_length=254, null=False, blank=False)
 
+    # We override the save function so we can auto-generate id_we_vote
+    def save(self, *args, **kwargs):
+        # Even if this data came from another source we still need a unique id_we_vote
+        if self.id_we_vote:
+            self.id_we_vote = self.id_we_vote.strip()
+        if self.id_we_vote == "" or self.id_we_vote is None:  # If there isn't a value...
+            # ...generate a new id
+            site_unique_id_prefix = fetch_site_unique_id_prefix()
+            next_local_integer = fetch_next_id_we_vote_last_contest_measure_integer()
+            # "wv" = We Vote
+            # site_unique_id_prefix = a generated (or assigned) unique id for one server running We Vote
+            # "meas" = tells us this is a unique id for a ContestMeasure
+            # next_integer = a unique, sequential integer for this server - not necessarily tied to database id
+            self.id_we_vote = "wv{site_unique_id_prefix}meas{next_integer}".format(
+                site_unique_id_prefix=site_unique_id_prefix,
+                next_integer=next_local_integer,
+            )
+        super(ContestMeasure, self).save(*args, **kwargs)
+
 
 class MeasureCampaign(models.Model):
+    # The id_we_vote identifier is unique across all We Vote sites, and allows us to share our data with other
+    # organizations
+    # It starts with "wv" then we add on a database specific identifier like "3v" (WeVoteSetting.site_unique_id_prefix)
+    # then the string "meascam", and then a sequential integer like "123".
+    # We keep the last value in WeVoteSetting.id_we_vote_last_measure_campaign_integer
+    id_we_vote = models.CharField(
+        verbose_name="we vote permanent id", max_length=255, default=None, null=True, blank=True, unique=True)
     # contest_measure link
     # The internal We Vote id for the ContestMeasure that this campaign taking a stance on
     contest_measure_id = models.CharField(verbose_name="contest_measure unique id",
@@ -179,6 +254,25 @@ class MeasureCampaign(models.Model):
     email = models.CharField(verbose_name="campaign email", max_length=254, null=True, blank=True)
     # The voice phone number for the campaign office.
     phone = models.CharField(verbose_name="campaign email", max_length=254, null=True, blank=True)
+
+    # We override the save function so we can auto-generate id_we_vote
+    def save(self, *args, **kwargs):
+        # Even if this data came from another source we still need a unique id_we_vote
+        if self.id_we_vote:
+            self.id_we_vote = self.id_we_vote.strip()
+        if self.id_we_vote == "" or self.id_we_vote is None:  # If there isn't a value...
+            # ...generate a new id
+            site_unique_id_prefix = fetch_site_unique_id_prefix()
+            next_local_integer = fetch_next_id_we_vote_last_measure_campaign_integer()
+            # "wv" = We Vote
+            # site_unique_id_prefix = a generated (or assigned) unique id for one server running We Vote
+            # "meascam" = tells us this is a unique id for a MeasureCampaign
+            # next_integer = a unique, sequential integer for this server - not necessarily tied to database id
+            self.id_we_vote = "wv{site_unique_id_prefix}meascam{next_integer}".format(
+                site_unique_id_prefix=site_unique_id_prefix,
+                next_integer=next_local_integer,
+            )
+        super(MeasureCampaign, self).save(*args, **kwargs)
 
 
 class BallotItem(models.Model):
@@ -251,8 +345,21 @@ class CandidateCampaignManager(models.Model):
         candidate_campaign_manager = CandidateCampaignManager()
         return candidate_campaign_manager.retrieve_candidate_campaign(candidate_campaign_id)
 
+    def retrieve_candidate_campaign_from_id_we_vote(self, id_we_vote):
+        candidate_campaign_id = 0
+        candidate_campaign_manager = CandidateCampaignManager()
+        return candidate_campaign_manager.retrieve_candidate_campaign(candidate_campaign_id, id_we_vote)
+
+    def fetch_candidate_campaign_id_from_id_we_vote(self, id_we_vote):
+        candidate_campaign_id = 0
+        candidate_campaign_manager = CandidateCampaignManager()
+        results = candidate_campaign_manager.retrieve_candidate_campaign(candidate_campaign_id, id_we_vote)
+        if results['success']:
+            return results['candidate_campaign_id']
+        return 0
+
     # NOTE: searching by all other variables seems to return a list of objects
-    def retrieve_candidate_campaign(self, candidate_campaign_id):
+    def retrieve_candidate_campaign(self, candidate_campaign_id, id_we_vote=None):
         error_result = False
         exception_does_not_exist = False
         exception_multiple_object_returned = False
@@ -262,6 +369,9 @@ class CandidateCampaignManager(models.Model):
             if candidate_campaign_id > 0:
                 candidate_campaign_on_stage = CandidateCampaign.objects.get(id=candidate_campaign_id)
                 candidate_campaign_id = candidate_campaign_on_stage.id
+            elif len(id_we_vote) > 0:
+                candidate_campaign_on_stage = CandidateCampaign.objects.get(id_we_vote=id_we_vote)
+                candidate_campaign_id = candidate_campaign_on_stage.id
         except CandidateCampaign.MultipleObjectsReturned as e:
             handle_record_found_more_than_one_exception(e)
             exception_multiple_object_returned = True
@@ -270,6 +380,7 @@ class CandidateCampaignManager(models.Model):
             exception_does_not_exist = True
 
         results = {
+            'success':                  True if candidate_campaign_id > 0 else False,
             'error_result':             error_result,
             'DoesNotExist':             exception_does_not_exist,
             'MultipleObjectsReturned':  exception_multiple_object_returned,

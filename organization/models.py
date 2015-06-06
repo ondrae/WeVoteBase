@@ -5,10 +5,18 @@
 from django.db import models
 from exception.models import handle_exception, handle_exception_silently, handle_record_found_more_than_one_exception,\
     handle_record_not_found_exception, handle_record_not_saved_exception
-
+from wevote_settings.models import fetch_next_id_we_vote_last_org_integer, fetch_site_unique_id_prefix
 
 class Organization(models.Model):
     # We are relying on built-in Python id field
+
+    # The id_we_vote identifier is unique across all We Vote sites, and allows us to share our org info with other
+    # organizations
+    # It starts with "wv" then we add on a database specific identifier like "3v" (WeVoteSetting.site_unique_id_prefix)
+    # then the string "org", and then a sequential integer like "123".
+    # We keep the last value in WeVoteSetting.id_we_vote_last_org_integer
+    id_we_vote = models.CharField(
+        verbose_name="we vote permanent id", max_length=255, default=None, null=True, blank=True, unique=True)
     name = models.CharField(
         verbose_name="organization name", max_length=255, default=None, null=True, blank=True)
     url = models.URLField(verbose_name='url of the endorsing organization', blank=True, null=True)
@@ -29,7 +37,8 @@ class Organization(models.Model):
         (UNKNOWN, 'Unknown'),
     )
 
-    organization_type = models.CharField("type of org", max_length=1, choices=ORGANIZATION_TYPE_CHOICES, default=UNKNOWN)
+    organization_type = models.CharField(
+        verbose_name="type of org", max_length=1, choices=ORGANIZATION_TYPE_CHOICES, default=UNKNOWN)
 
     # Link to a logo for this organization
     # logo
@@ -39,6 +48,26 @@ class Organization(models.Model):
 
     class Meta:
         ordering = ('name',)
+
+    # We override the save function so we can auto-generate id_we_vote
+    def save(self, *args, **kwargs):
+        # Even if this organization came from another source we still need a unique id_we_vote
+        if self.id_we_vote:
+            self.id_we_vote = self.id_we_vote.strip()
+        if self.id_we_vote == "" or self.id_we_vote is None:  # If there isn't a value...
+            # ...generate a new id
+            site_unique_id_prefix = fetch_site_unique_id_prefix()
+            next_local_integer = fetch_next_id_we_vote_last_org_integer()
+            # "wv" = We Vote
+            # site_unique_id_prefix = a generated (or assigned) unique id for one server running We Vote
+            # "org" = tells us this is a unique id for an org
+            # next_integer = a unique, sequential integer for this server - not necessarily tied to database id
+            self.id_we_vote = "wv{site_unique_id_prefix}org{next_integer}".format(
+                site_unique_id_prefix=site_unique_id_prefix,
+                next_integer=next_local_integer,
+            )
+            # TODO we need to deal with the situation where id_we_vote is NOT unique on save
+        super(Organization, self).save(*args, **kwargs)
 
     def is_nonprofit_501c3(self):
         return self.organization_type in self.NONPROFIT_501C3
@@ -64,15 +93,19 @@ class OrganizationManager(models.Model):
     """
     A class for working with the Organization model
     """
-    def retrieve_organization(self, organization_id):
+    def retrieve_organization(self, organization_id, id_we_vote=None):
         error_result = False
         exception_does_not_exist = False
         exception_multiple_object_returned = False
         organization_on_stage = Organization()
         organization_on_stage_id = 0
         try:
-            organization_on_stage = Organization.objects.get(id=organization_id)
-            organization_on_stage_id = organization_on_stage.id
+            if organization_id > 0:
+                organization_on_stage = Organization.objects.get(id=organization_id)
+                organization_on_stage_id = organization_on_stage.id
+            elif len(id_we_vote) > 0:
+                organization_on_stage = Organization.objects.get(id_we_vote=id_we_vote)
+                organization_on_stage_id = organization_on_stage.id
         except Organization.MultipleObjectsReturned as e:
             handle_record_found_more_than_one_exception(e)
             error_result = True
@@ -95,3 +128,12 @@ class OrganizationManager(models.Model):
             'MultipleObjectsReturned':      exception_multiple_object_returned,
         }
         return results
+
+    def fetch_organization_id(self, id_we_vote):
+        organization_id = 0
+        organization_manager = OrganizationManager()
+        if len(id_we_vote) > 0:
+            results = organization_manager.retrieve_organization(organization_id, id_we_vote)  # TODO DALE
+            if results['success']:
+                return results['organization_id']
+        return 0

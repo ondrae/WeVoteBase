@@ -2,15 +2,20 @@
 # Brought to you by We Vote. Be good.
 # -*- coding: UTF-8 -*-
 
-from django.db import models
-from exception.models import handle_exception, handle_record_not_found_exception, handle_record_not_saved_exception
-from politician.models import Politician
-from election_office_measure.models import Election, ContestOffice, CandidateCampaign, ContestMeasure, \
-    MeasureCampaign, BallotItem
+from django.contrib import messages
+from election_office_measure.models import Election, ContestOffice, CandidateCampaign, CandidateCampaignManager, \
+    ContestMeasure, MeasureCampaign, BallotItem
+from exception.models import handle_exception, handle_exception_silently, handle_record_not_found_exception, \
+    handle_record_not_saved_exception
 from import_export_theunitedstatesio.models import import_legislators_current_csv, TheUnitedStatesIoLegislatorCurrent
 from import_export_google_civic.models import GoogleCivicElection, GoogleCivicContestOffice, \
     GoogleCivicCandidateCampaign, GoogleCivicContestReferendum
-
+import json
+from organization.models import Organization, OrganizationManager
+import os  # Needed to get WE_VOTE_API_KEY from an environment variable
+from politician.models import Politician
+from position.models import PositionEntered
+import requests
 
 def import_politician_data_from_theunitedstatesio():
     """
@@ -77,7 +82,8 @@ def transfer_theunitedstatesio_cached_data_to_wevote_tables():
             # ...so check to see if we have a record of this legislator based on full_name_google_civic
             if legislator_current_entry.first_name and legislator_current_entry.last_name:
                 try:
-                    full_name_assembled_guess = legislator_current_entry.first_name+" "+legislator_current_entry.last_name
+                    full_name_assembled_guess = \
+                        legislator_current_entry.first_name+" "+legislator_current_entry.last_name
                     print "Searching for existing full_name_google_civic: {full_name_assembled}".format(
                         full_name_assembled=full_name_assembled_guess)
                     query1 = Politician.objects.all()
@@ -98,7 +104,8 @@ def transfer_theunitedstatesio_cached_data_to_wevote_tables():
             # ...so check to see if we have a record of this legislator based on full_name_assembled
             if legislator_current_entry.first_name and legislator_current_entry.last_name:
                 try:
-                    full_name_assembled_guess = legislator_current_entry.first_name+" "+legislator_current_entry.last_name
+                    full_name_assembled_guess = \
+                        legislator_current_entry.first_name+" "+legislator_current_entry.last_name
                     print "Searching for existing full_name_assembled: {full_name_assembled}".format(
                         full_name_assembled=full_name_assembled_guess)
                     query1 = Politician.objects.all()
@@ -140,7 +147,6 @@ def transfer_theunitedstatesio_cached_data_to_wevote_tables():
         politician_entry.id_washington_post = legislator_current_entry.washington_post_id
         politician_entry.id_icpsr = legislator_current_entry.icpsr_id
         politician_entry.id_wikipedia = legislator_current_entry.wikipedia_id
-
 
         # OTHER FIELDS
         # "type",                   # row[4]
@@ -287,7 +293,7 @@ def google_civic_link_politician_to_campaign():
                       "(skipping to next google_civic_candidate_campaign_entry)"
                 continue
             contest_office_on_stage = results['contest_office_on_stage']
-            contest_office_created = results['contest_office_created']
+            # contest_office_created = results['contest_office_created']
 
             # Link this ContestOffice to the Election that was created above
             contest_office_on_stage.election_id = election_on_stage.id
@@ -305,8 +311,8 @@ def google_civic_link_politician_to_campaign():
             print "ERROR returned in google_civic_get_or_create_candidate_campaign_basic "\
                   "(skipping to next google_civic_candidate_campaign_entry)"
             continue
-        politician_link_needed = results['politician_link_needed']
-        candidate_campaign_created = results['candidate_campaign_created']
+        # politician_link_needed = results['politician_link_needed']
+        # candidate_campaign_created = results['candidate_campaign_created']
         candidate_campaign_on_stage = results['candidate_campaign_on_stage']
 
         try:
@@ -358,13 +364,18 @@ def google_civic_link_politician_to_campaign():
 
 def google_civic_get_or_create_contest_office(google_civic_candidate_campaign_entry, election_on_stage):
     error_result = False
+    ballot_item_on_stage = BallotItem()
     ballot_item_on_stage_found = False
+    contest_office_on_stage = ContestOffice()
+    contest_office_created = False
+    google_civic_contest_office_on_stage = GoogleCivicContestOffice()
     try:
         # When we import from google, we link a google_civic_contest_office entry (with an internal id) to
         #  google_civic_candidate_campaign_entry
         # print "Retrieving google_civic_contest_office"
         google_civic_contest_office_query = GoogleCivicContestOffice.objects.all()
-        google_civic_contest_office_query = google_civic_contest_office_query.filter(id=google_civic_candidate_campaign_entry.google_civic_contest_office_id)
+        google_civic_contest_office_query = google_civic_contest_office_query.filter(
+            id=google_civic_candidate_campaign_entry.google_civic_contest_office_id)
 
         if len(google_civic_contest_office_query) == 1:
             google_civic_contest_office_on_stage = google_civic_contest_office_query[0]
@@ -377,8 +388,10 @@ def google_civic_get_or_create_contest_office(google_civic_candidate_campaign_en
         # Try to find earlier version based on the google_civic_election_id identifier
         # print "Retrieving contest_office"
         contest_office_query = ContestOffice.objects.all()
-        contest_office_query = contest_office_query.filter(google_civic_election_id=google_civic_contest_office_on_stage.google_civic_election_id)
-        contest_office_query = contest_office_query.filter(district_name=google_civic_contest_office_on_stage.district_name)
+        contest_office_query = contest_office_query.filter(
+            google_civic_election_id=google_civic_contest_office_on_stage.google_civic_election_id)
+        contest_office_query = contest_office_query.filter(
+            district_name=google_civic_contest_office_on_stage.district_name)
         contest_office_query = contest_office_query.filter(office_name=google_civic_contest_office_on_stage.office)
         # TODO: If the 'office' text from Google Civic changes slightly, we would create a new ContestOffice entry
         # (which would not be correct) Should we make this more robust and error-proof?
@@ -391,7 +404,8 @@ def google_civic_get_or_create_contest_office(google_civic_candidate_campaign_en
             # TODO Update contest_office information here
         elif len(contest_office_query) > 1:
             # We have bad data - a duplicate
-            print "We have bad data, a duplicate ContestOffice entry: {office}".format(office=google_civic_contest_office_on_stage.office)
+            print "We have bad data, a duplicate ContestOffice entry: {office}".format(
+                office=google_civic_contest_office_on_stage.office)
             return {
                 'error_result': True,
             }
@@ -421,7 +435,8 @@ def google_civic_get_or_create_contest_office(google_civic_candidate_campaign_en
         # print "Retrieving BallotItem"
         ballot_item_query = BallotItem.objects.all()
         ballot_item_query = ballot_item_query.filter(voter_id=1)
-        ballot_item_query = ballot_item_query.filter(google_civic_election_id=google_civic_contest_office_on_stage.google_civic_election_id)
+        ballot_item_query = ballot_item_query.filter(
+            google_civic_election_id=google_civic_contest_office_on_stage.google_civic_election_id)
         ballot_item_query = ballot_item_query.filter(contest_office_id=contest_office_on_stage.id)
         if len(ballot_item_query) == 1:
             ballot_item_on_stage = ballot_item_query[0]
@@ -468,15 +483,18 @@ def google_civic_get_or_create_candidate_campaign_basic(google_civic_candidate_c
     """
     error_result = False
     candidate_campaign_exists_locally = False
+    candidate_campaign_on_stage = CandidateCampaign()
     candidate_campaign_created = False
     politician_link_needed = True
     try:
         # Try to find earlier version based on the google_civic_election_id identifier
         candidate_campaign_query = CandidateCampaign.objects.all()
-        candidate_campaign_query = candidate_campaign_query.filter(google_civic_election_id__exact=google_civic_candidate_campaign_entry.google_civic_election_id)
+        candidate_campaign_query = candidate_campaign_query.filter(
+            google_civic_election_id__exact=google_civic_candidate_campaign_entry.google_civic_election_id)
         # TODO: If the name from Google Civic changes slightly, we would create a new campaign entry
         # (which would not be correct) We should make this more robust and error-proof
-        candidate_campaign_query = candidate_campaign_query.filter(candidate_name__exact=google_civic_candidate_campaign_entry.name)
+        candidate_campaign_query = candidate_campaign_query.filter(
+            candidate_name__exact=google_civic_candidate_campaign_entry.name)
 
         # Was at least one existing entry found based on the above criteria?
         if len(candidate_campaign_query):
@@ -519,6 +537,7 @@ def google_civic_get_or_create_politician(google_civic_candidate_campaign_entry)
     error_result = False
     ##########################
     # Does this politician exist locally?
+    politician_on_stage = Politician()
     politician_on_stage_found = False
     first_name_guess = google_civic_candidate_campaign_entry.name.partition(' ')[0]
     last_name_guess = google_civic_candidate_campaign_entry.name.partition(' ')[-1]
@@ -564,7 +583,8 @@ def google_civic_get_or_create_politician(google_civic_candidate_campaign_entry)
     if not politician_on_stage_found:
         # No entries were found, so we need to
         # a) Search more deeply
-        print "first_name_guess: {first_name_guess}, last_name_guess: {last_name_guess}".format(first_name_guess=first_name_guess, last_name_guess=last_name_guess)
+        print "first_name_guess: {first_name_guess}, last_name_guess: {last_name_guess}".format(
+            first_name_guess=first_name_guess, last_name_guess=last_name_guess)
         # TODO DALE 2015-05-02 With this code, if we had imported a "Betty T. Yee" from another non-google-civic
         #  source (where full_name_google_civic was empty), we would create a second Politician entry. Fix this.
         try:
@@ -576,9 +596,9 @@ def google_civic_get_or_create_politician(google_civic_candidate_campaign_entry)
                 politician_on_stage = politician_query_first_last_guess[0]
                 politician_on_stage_found = True
             else:
-                print "No politician found based on first_name_guess: {first_name} and last_name_guess: {last_name}".format(
-                    first_name=first_name_guess,
-                    last_name=last_name_guess)
+                print "No politician found based on first_name_guess: {first_name} " \
+                      "and last_name_guess: {last_name}".format(first_name=first_name_guess,
+                                                                last_name=last_name_guess)
         except Exception as e:
             handle_record_not_found_exception(e)
 
@@ -602,7 +622,8 @@ def google_civic_get_or_create_politician(google_civic_candidate_campaign_entry)
     if error_result:
         print "There was an error trying to create a politician"
     # else:
-        # print "It seems we have found a politician: {display_full_name}".format(display_full_name=politician_on_stage.display_full_name())
+        # print "It seems we have found a politician: {display_full_name}".format(
+        # display_full_name=politician_on_stage.display_full_name())
         # print "It seems we have found a politician: "+str(politician_on_stage.display_full_name())
         # print "It seems we found or created a politician."
 
@@ -611,3 +632,234 @@ def google_civic_get_or_create_politician(google_civic_candidate_campaign_entry)
         'politician_on_stage': politician_on_stage,
     }
     return results
+
+# Set your environment variable with: export WE_VOTE_API_KEY=<API KEY HERE>
+if 'WE_VOTE_API_KEY' in os.environ:
+    WE_VOTE_API_KEY = os.environ['WE_VOTE_API_KEY']
+else:
+    WE_VOTE_API_KEY = ''
+ORGANIZATIONS_URL = "http://my.wevoteeducation.org/import_export/organizations/?format=json"
+ORGANIZATIONS_JSON_FILE = 'import_export/import_data/organizations_sample.json'
+CANDIDATE_CAMPAIGNS_URL = "http://my.wevoteeducation.org/import_export/candidate_campaigns/?format=json"
+CANDIDATE_CAMPAIGNS_JSON_FILE = 'import_export/import_data/candidate_campaigns_sample.json'
+POSITIONS_URL = "http://my.wevoteeducation.org/import_export/positions/?format=json"
+POSITIONS_JSON_FILE = 'import_export/import_data/positions_sample.json'
+
+
+# TODO DALE Get this working
+def import_we_vote_organizations_from_json(request, load_from_uri=False):
+    """
+    Get the json data, and either create new entries or update existing
+    :return:
+    """
+    if load_from_uri:
+        # Request json file from We Vote servers
+        print "Loading Organizations from We Vote Master servers"
+        request = requests.get(ORGANIZATIONS_URL, params={
+            "key": WE_VOTE_API_KEY,  # This comes from an environment variable
+        })
+        structured_json = json.loads(request.text)
+    else:
+        # Load saved json from local file
+        print "Loading organizations from local file"
+
+        with open(ORGANIZATIONS_JSON_FILE) as json_data:
+            structured_json = json.load(json_data)
+
+    for one_organization in structured_json:
+        print "id_we_vote: {id_we_vote}, name: {name}, url: {url}".format(id_we_vote=one_organization["id_we_vote"],
+                                                                          name=one_organization["name"],
+                                                                          url=one_organization["url"],)
+        # Make sure we have the minimum required variables
+        if len(one_organization["id_we_vote"]) == 0 or len(one_organization["name"]) == 0:
+            continue
+
+        # Check to see if this organization is already being used anywhere
+        organization_on_stage_found = False
+        try:
+            if len(one_organization["id_we_vote"]) > 0:
+                organization_query = Organization.objects.filter(id_we_vote=one_organization["id_we_vote"])
+                if len(organization_query):
+                    organization_on_stage = organization_query[0]
+                    organization_on_stage_found = True
+            elif len(one_organization["name"]) > 0:
+                organization_query = Organization.objects.filter(name=one_organization["name"])
+                if len(organization_query):
+                    organization_on_stage = organization_query[0]
+                    organization_on_stage_found = True
+        except Exception as e:
+            handle_record_not_found_exception(e)
+
+        try:
+            if organization_on_stage_found:
+                # Update
+                organization_on_stage.id_we_vote = one_organization["id_we_vote"]
+                organization_on_stage.name = one_organization["name"]
+                organization_on_stage.url = one_organization["url"]
+                organization_on_stage.save()
+                messages.add_message(request, messages.INFO, "Organization updated: {name}".format(
+                    name=one_organization["name"]))
+            else:
+                # Create new
+                organization_on_stage = Organization(
+                    id_we_vote=one_organization["id_we_vote"],
+                    name=one_organization["name"],
+                    url=one_organization["url"],
+                )
+                organization_on_stage.save()
+                messages.add_message(request, messages.INFO, "New organization imported: {name}".format(
+                    name=one_organization["name"]))
+        except Exception as e:
+            handle_record_not_saved_exception(e)
+            messages.add_message(request, messages.ERROR,
+                                 "Could not save Organization, id_we_vote: {id_we_vote}, name: {name}, url: {url}".format(
+                                     id_we_vote=one_organization["id_we_vote"],
+                                     name=one_organization["name"],
+                                     url=one_organization["url"],))
+
+
+def import_we_vote_candidate_campaigns_from_json(request, load_from_uri=False):
+    """
+    Get the json data, and either create new entries or update existing
+    :return:
+    """
+    if load_from_uri:
+        # Request json file from We Vote servers
+        messages.add_message(request, messages.INFO, "Loading CandidateCampaign IDs from We Vote Master servers")
+        request = requests.get(CANDIDATE_CAMPAIGNS_URL, params={
+            "key": WE_VOTE_API_KEY,  # This comes from an environment variable
+        })
+        structured_json = json.loads(request.text)
+    else:
+        # Load saved json from local file
+        messages.add_message(request, messages.INFO, "Loading CandidateCampaigns IDs from local file")
+
+        with open(CANDIDATE_CAMPAIGNS_JSON_FILE) as json_data:
+            structured_json = json.load(json_data)
+
+    for one_candidate_campaign in structured_json:
+        # For now we are only adding a We Vote ID so we can save Positions
+        candidate_campaign_on_stage_found = False
+        try:
+            if len(one_candidate_campaign["candidate_name"]) > 0:
+                candidate_campaign_query = CandidateCampaign.objects.filter(
+                    candidate_name=one_candidate_campaign["candidate_name"])
+                if len(candidate_campaign_query) == 1:  # Make sure only one found
+                    candidate_campaign_on_stage = candidate_campaign_query[0]
+                    candidate_campaign_on_stage_found = True
+        except Exception as e:
+            handle_record_not_found_exception(e)
+
+        try:
+            if candidate_campaign_on_stage_found:
+                # Update
+                candidate_campaign_on_stage.id_we_vote = one_candidate_campaign["id_we_vote"]
+                candidate_campaign_on_stage.save()
+                messages.add_message(request, messages.INFO, "CandidateCampaign updated: {candidate_name}".format(
+                    candidate_name=one_candidate_campaign["candidate_name"]))
+            else:
+                messages.add_message(request, messages.ERROR, "CandidateCampaign not found: {candidate_name}".format(
+                    candidate_name=one_candidate_campaign["candidate_name"]))
+        except Exception as e:
+            handle_record_not_saved_exception(e)
+            messages.add_message(request, messages.ERROR,
+                                 "Could not save CandidateCampaign, id_we_vote: {id_we_vote}, "
+                                 "candidate_name: {candidate_name}, ".format(
+                                     id_we_vote=one_candidate_campaign["id_we_vote"],
+                                     candidate_name=one_candidate_campaign["candidate_name"],))
+
+
+def import_we_vote_positions_from_json(request, load_from_uri=False):
+    """
+    Get the json data, and either create new entries or update existing
+    :return:
+    """
+    if load_from_uri:
+        # Request json file from We Vote servers
+        messages.add_message(request, messages.INFO, "Loading positions from We Vote Master servers")
+        request = requests.get(POSITIONS_URL, params={
+            "key": WE_VOTE_API_KEY,  # This comes from an environment variable
+        })
+        structured_json = json.loads(request.text)
+    else:
+        # Load saved json from local file
+        messages.add_message(request, messages.INFO, "Loading positions from local file")
+
+        with open(POSITIONS_JSON_FILE) as json_data:
+            structured_json = json.load(json_data)
+
+    for one_position in structured_json:
+        # Make sure we have the minimum required variables
+        if len(one_position["id_we_vote"]) == 0 \
+                or len(one_position["organization_id_we_vote"]) == 0\
+                or len(one_position["candidate_campaign_id_we_vote"]) == 0:
+            continue
+
+        # Check to see if this position is already being used anywhere
+        position_on_stage_found = False
+        try:
+            if len(one_position["id_we_vote"]) > 0:
+                position_query = PositionEntered.objects.filter(id_we_vote=one_position["id_we_vote"])
+                if len(position_query):
+                    position_on_stage = position_query[0]
+                    position_on_stage_found = True
+        except PositionEntered.DoesNotExist as e:
+            handle_exception_silently(e)
+        except Exception as e:
+            handle_record_not_found_exception(e)
+
+        # We need to look up the local organization_id based on the newly saved we_vote_id
+        organization_manager = OrganizationManager()
+        organization_id = organization_manager.fetch_organization_id(one_position["organization_id_we_vote"])
+
+        # We need to look up the local candidate_campaign_id
+        candidate_campaign_manager = CandidateCampaignManager()
+        candidate_campaign_id = candidate_campaign_manager.fetch_candidate_campaign_id_from_id_we_vote(
+            one_position["candidate_campaign_id_we_vote"])
+
+        # TODO We need to look up measure_campaign_id
+        measure_campaign_id = 0
+
+        try:
+            if position_on_stage_found:
+                # Update
+                position_on_stage.id_we_vote = one_position["id_we_vote"]
+                position_on_stage.organization_id = organization_id
+                position_on_stage.candidate_campaign_id = candidate_campaign_id
+                position_on_stage.measure_campaign_id = measure_campaign_id
+                position_on_stage.date_entered = one_position["date_entered"]
+                position_on_stage.election_id = one_position["election_id"]
+                position_on_stage.stance = one_position["stance"]
+                position_on_stage.more_info_url = one_position["more_info_url"]
+                position_on_stage.statement_text = one_position["statement_text"]
+                position_on_stage.statement_html = one_position["statement_html"]
+                position_on_stage.save()
+                messages.add_message(request, messages.INFO, "Position updated: {id_we_vote}".format(
+                    id_we_vote=one_position["id_we_vote"]))
+            else:
+                # Create new
+                position_on_stage = PositionEntered(
+                    id_we_vote=one_position["id_we_vote"],
+                    organization_id=organization_id,
+                    candidate_campaign_id=candidate_campaign_id,
+                    measure_campaign_id=measure_campaign_id,
+                    date_entered=one_position["date_entered"],
+                    election_id=one_position["election_id"],
+                    stance=one_position["stance"],
+                    more_info_url=one_position["more_info_url"],
+                    statement_text=one_position["statement_text"],
+                    statement_html=one_position["statement_html"],
+                )
+                position_on_stage.save()
+                messages.add_message(request, messages.INFO, "New position imported: {id_we_vote}".format(
+                    id_we_vote=one_position["id_we_vote"]))
+        except Exception as e:
+            handle_record_not_saved_exception(e)
+            messages.add_message(request, messages.ERROR,
+                                 "Could not save position, id_we_vote: {id_we_vote}, "
+                                 "organization_id_we_vote: {organization_id_we_vote}, "
+                                 "candidate_campaign_id_we_vote: {candidate_campaign_id_we_vote}".format(
+                                     id_we_vote=one_position["id_we_vote"],
+                                     organization_id_we_vote=one_position["organization_id_we_vote"],
+                                     candidate_campaign_id_we_vote=one_position["candidate_campaign_id_we_vote"],
+                                 ))

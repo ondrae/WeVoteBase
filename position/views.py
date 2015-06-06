@@ -261,7 +261,7 @@ def display_stance_verb_we_are_looking_for_singular(stance_we_are_looking_for):
     elif stance_we_are_looking_for == STILL_DECIDING:
         text_for_stance_we_are_looking_for += "is still deciding"
     elif stance_we_are_looking_for == SUPPORT:
-        text_for_stance_we_are_looking_for += "supporter"
+        text_for_stance_we_are_looking_for += "support"
     return text_for_stance_we_are_looking_for
 
 
