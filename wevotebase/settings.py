@@ -234,7 +234,7 @@ BOOTSTRAP3 = {
 LOGIN_REDIRECT_URL = '/'
 SOCIAL_AUTH_FACEBOOK_KEY = '868492333200013'
 SOCIAL_AUTH_FACEBOOK_SECRET = '6789422f725299afe12bf271ebb59d6b'
-SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email', 'user_friends']
 SOCIAL_AUTH_PIPELINE = (
     'social.pipeline.social_auth.social_details',
     'social.pipeline.social_auth.social_uid',
