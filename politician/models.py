@@ -4,6 +4,8 @@
 
 # Politician-related Models
 from django.db import models
+from exception.models import handle_exception, handle_exception_silently, handle_record_found_more_than_one_exception,\
+    handle_record_not_found_exception, handle_record_not_saved_exception
 from tag.models import Tag
 
 
@@ -95,6 +97,17 @@ class Politician(models.Model):
         else:
             return self.first_name + " " + self.last_name
 
+    def fetch_photo_url(self):
+        """
+        fetch URL of politician's photo from TheUnitedStatesIo repo
+        """
+        if self.id_bioguide:
+            url_str = 'https://theunitedstates.io/images/congress/225x275/{id_bioguide}.jpg'.format(
+                id_bioguide=self.id_bioguide)
+            return url_str
+        else:
+            return ""
+
     def is_female(self):
         return self.gender in self.FEMALE
 
@@ -107,6 +120,50 @@ class Politician(models.Model):
     def is_gender_specified(self):
         return self.gender in (self.FEMALE, self.GENDER_NEUTRAL, self.MALE)
 
+
+class PoliticianManager(models.Model):
+    def fetch_photo_url(self, politician_id):
+        politician_manager = PoliticianManager()
+        results = politician_manager.retrieve_politician(politician_id)
+
+        if results['success']:
+            politician = results['politician']
+            return politician.fetch_photo_url()
+        return ""
+
+    def retrieve_politician(self, politician_id):  # , id_we_vote=None
+        error_result = False
+        exception_does_not_exist = False
+        exception_multiple_object_returned = False
+        politician_on_stage = Politician()
+        politician_on_stage_id = 0
+        try:
+            if politician_id > 0:
+                politician_on_stage = Politician.objects.get(id=politician_id)
+                politician_on_stage_id = politician_on_stage.id
+            # elif len(id_we_vote) > 0:
+            #     politician_on_stage = Politician.objects.get(id_we_vote=id_we_vote)
+            #     politician_on_stage_id = politician_on_stage.id
+        except Politician.MultipleObjectsReturned as e:
+            handle_record_found_more_than_one_exception(e)
+            error_result = True
+            exception_multiple_object_returned = True
+        except Politician.DoesNotExist as e:
+            handle_exception_silently(e)
+            error_result = True
+            exception_does_not_exist = True
+
+        politician_on_stage_found = True if politician_on_stage_id > 0 else False
+        results = {
+            'success':                      True if politician_on_stage_found else False,
+            'politician_found':             politician_on_stage_found,
+            'politician_id':                politician_on_stage_id,
+            'politician':                   politician_on_stage,
+            'error_result':                 error_result,
+            'DoesNotExist':                 exception_does_not_exist,
+            'MultipleObjectsReturned':      exception_multiple_object_returned,
+        }
+        return results
 
 # def delete_all_politician_data():
 #     with open(LEGISLATORS_CURRENT_FILE, 'rU') as politicians_current_data:

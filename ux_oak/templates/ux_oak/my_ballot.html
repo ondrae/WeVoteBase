@@ -12,6 +12,9 @@
         {% if ballot_item.is_contest_office %}
             {% for candidate_campaign in ballot_item.candidates_list %}
             <h3>{{ candidate_campaign.candidate_name }}</h3>
+                {% if candidate_campaign.fetch_photo_url %}
+                    <img src="{{ candidate_campaign.fetch_photo_url }}" />
+                {% endif %}
                 <div class="action_bar">
                 {# Support Thumbs Up #}
                 {# We are NOT currently supporting #}
