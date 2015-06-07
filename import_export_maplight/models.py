@@ -3,6 +3,7 @@
 # -*- coding: UTF-8 -*-
 
 from django.db import models
+import json
 
 class MapLightContest(models.Model):
     election_date = models.DateField('election date', default=None, null=True, blank=True) # "2014-09-03"
@@ -47,3 +48,38 @@ class MapLightPolitician(models.Model):
                                        max_length=255, null=False, blank=True, unique=False)
     url = models.CharField(verbose_name='url',
                                        max_length=255, null=False, blank=True, unique=False) # "http://votersedge.org/california/2014/november/state/candidates/governor/2633-jerry-brown"
+
+MAPLIGHT_SAMPLE_BALLOT_JSON_FILE = "import_export_maplight/import_data/maplight_sf_ballot_sample.json"
+MAPLIGHT_SAMPLE_CONTEST_JSON_FILE = "import_export_maplight/import_data/contest_{contest_id}.json"
+
+def import_maplight_from_json_view(request):
+    print "TO BE IMPLEMENTED"
+    load_from_url = False
+    if load_from_url:
+        # Request json file from Maplight servers
+        print "Loading Maplight JSON from url"
+        # request = requests.get(VOTER_INFO_URL, params={
+        #     "key": GOOGLE_CIVIC_API_KEY,  # This comes from an environment variable
+        #     "address": "254 Hartford Street San Francisco CA",
+        #     "electionId": "2000",
+        # })
+        # structured_json = json.loads(request.text)
+    else:
+        # Load saved json from local file
+        print "Loading Maplight sample JSON from local file"
+
+        with open(MAPLIGHT_SAMPLE_BALLOT_JSON_FILE) as json_data:
+            structured_json = json.load(json_data)
+        print "Done"
+
+    if structured_json and len(structured_json):
+        # Parse the JSON here
+        contests_structured_json = structured_json
+        for one_contest in contests_structured_json:
+            if one_contest['type'] == "office":
+                import_maplight_contest_from_json(request, one_contest)
+            # Also add measure
+
+def import_maplight_contest_from_json(request, one_contest):
+    print "Test"
+
