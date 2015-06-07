@@ -1,6 +1,6 @@
-"""Social utils"""
+"""Social template context processors"""
 
-from ux_oak.facebook import FacebookAPI
+from facebook import FacebookAPI
 
 def profile_photo(request):
     context_extras = {}

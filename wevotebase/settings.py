@@ -82,6 +82,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'wevote_social.middleware.SocialMiddleware',
 )
 
 AUTHENTICATION_BACKENDS = (
@@ -106,7 +107,7 @@ TEMPLATES = [
                 'django.template.context_processors.static',  # Django Cookbook
                 'social.apps.django_app.context_processors.backends',
                 'social.apps.django_app.context_processors.login_redirect',
-                'wevotebase.social.profile_photo',
+                'wevote_social.context_processors.profile_photo',
             ],
         },
     },
