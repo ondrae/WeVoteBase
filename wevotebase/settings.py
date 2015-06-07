@@ -70,6 +70,7 @@ INSTALLED_APPS = (
     'ux_oak',  # The business logic for this particular version of We Vote
     'wevote_functions',
     'wevote_settings',
+    'wevote_social',
     'voter',  # See also AUTH_USER_MODEL in wevotebase/settings.py
 )
 
@@ -87,6 +88,7 @@ MIDDLEWARE_CLASSES = (
 
 AUTHENTICATION_BACKENDS = (
     'social.backends.facebook.FacebookOAuth2',
+    'social.backends.twitter.TwitterOAuth',
     'django.contrib.auth.backends.ModelBackend',
 )
 
@@ -227,6 +229,8 @@ LOGIN_REDIRECT_URL = '/'
 SOCIAL_AUTH_FACEBOOK_KEY = '868492333200013'
 SOCIAL_AUTH_FACEBOOK_SECRET = '6789422f725299afe12bf271ebb59d6b'
 SOCIAL_AUTH_FACEBOOK_SCOPE = ['email', 'user_friends']
+SOCIAL_AUTH_TWITTER_KEY = 'iMJMr4WrR4F5PLkuwrC3gDkFf'
+SOCIAL_AUTH_TWITTER_SECRET = '9kVeY7UEWRDOeagvdHNLsAYumgeWYuEWIGRxNK3k3r28qZ6YXr'
 SOCIAL_AUTH_PIPELINE = (
     'social.pipeline.social_auth.social_details',
     'social.pipeline.social_auth.social_uid',

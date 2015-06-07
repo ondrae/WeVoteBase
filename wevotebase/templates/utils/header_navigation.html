@@ -17,7 +17,7 @@
       </div>
     {% else %}
       <div class="navbar-text">
-        <a href="{% url 'social:begin' 'facebook' %}?next={{ request.path }}">Login with Facebook</a>
+        <a href="/login?next={{ request.path }}">Login</a>
       </div>
     {% endif %}
     </div>
