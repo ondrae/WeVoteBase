@@ -128,6 +128,7 @@ class CandidateCampaign(models.Model):
         verbose_name="google civic election id", max_length=254, null=True, blank=True)
     # The URL for the candidate's campaign web site.
     candidate_url = models.URLField(verbose_name='website url of candidate campaign', blank=True, null=True)
+    candidate_photo_url = models.URLField(verbose_name='candidate portrait url of candidate', blank=True, null=True)
     facebook_url = models.URLField(verbose_name='facebook url of candidate campaign', blank=True, null=True)
     twitter_url = models.URLField(verbose_name='twitter url of candidate campaign', blank=True, null=True)
     google_plus_url = models.URLField(verbose_name='google plus url of candidate campaign', blank=True, null=True)
