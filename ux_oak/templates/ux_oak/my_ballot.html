@@ -12,9 +12,9 @@
         <h2>{{ ballot_item.display_ballot_item }} {# <a href="#{% url 'ux_oak:politician_detail' ballot_item.id %}">(info)</a> #}</h2>
         {% if ballot_item.is_contest_office %}
             {% for candidate_campaign in ballot_item.candidates_list %}
-            <div style="padding: 20px">
+            <div style="padding-left: 20px">
             <div style="col-xs">
-                <div style="float: left">
+                <div style="float: left; margin-right: 20px;">
                     {% if candidate_campaign.fetch_photo_url %}
                         <img style="max-height: 60px" src="{{ candidate_campaign.fetch_photo_url }}" />
                     {% endif %}
@@ -22,7 +22,7 @@
                 <div>
                     <h3>{{ candidate_campaign.candidate_name }}</h3>
                 </div>
-            </div>
+
                 <div class="action_bar">
                 {# Support Thumbs Up #}
                 {# We are NOT currently supporting #}
@@ -115,6 +115,8 @@
         {% endcomment %}<span class="ask_link_text">Ask Friends</span></a>
                 </span>
                 </div>
+
+            </div>
 
                 {# support, oppose, asking, and no stance info only summary lines #}
                 {# We populate the support/oppose orgs + links ("Common Cause, Berkeley Democratic Club and 3 others support") from jquery calls #}
