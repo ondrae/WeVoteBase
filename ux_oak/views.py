@@ -57,3 +57,14 @@ def start_view(request):
 
     }
     return render(request, 'ux_oak/start.html', template_values)
+
+def ask_view(request, candidate_campaign_id):
+    friends = []
+    if hasattr(request, 'facebook'):
+        friends = request.facebook.fetch_friends()
+
+    template_values = {
+        'friends': friends
+    }
+
+    return render(request, 'ux_oak/ask.html', template_values)

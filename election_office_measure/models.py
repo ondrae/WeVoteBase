@@ -4,6 +4,7 @@
 
 from django.db import models
 from exception.models import handle_exception_silently, handle_record_found_more_than_one_exception
+from politician.models import PoliticianManager
 from wevote_settings.models import fetch_next_id_we_vote_last_candidate_campaign_integer, \
     fetch_next_id_we_vote_last_contest_measure_integer, fetch_next_id_we_vote_last_contest_office_integer, \
     fetch_next_id_we_vote_last_measure_campaign_integer, fetch_site_unique_id_prefix
@@ -135,6 +136,10 @@ class CandidateCampaign(models.Model):
     email = models.CharField(verbose_name="candidate campaign email", max_length=254, null=True, blank=True)
     # The voice phone number for the candidate's campaign office.
     phone = models.CharField(verbose_name="candidate campaign email", max_length=254, null=True, blank=True)
+
+    def fetch_photo_url(self):
+        politician_manager = PoliticianManager()
+        return politician_manager.fetch_photo_url(self.politician_id)
 
     # We override the save function so we can auto-generate id_we_vote
     def save(self, *args, **kwargs):

@@ -110,12 +110,12 @@ class OrganizationManager(models.Model):
             handle_record_found_more_than_one_exception(e)
             error_result = True
             exception_multiple_object_returned = True
-            print "position.organization Found multiple"
+            print "Organization.MultipleObjectsReturned"
         except Organization.DoesNotExist as e:
             handle_exception_silently(e)
             error_result = True
             exception_does_not_exist = True
-            print "position.organization did not find"
+            print "Organization.DoesNotExist"
 
         organization_on_stage_found = True if organization_on_stage_id > 0 else False
         results = {

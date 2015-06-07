@@ -13,6 +13,9 @@
         {% if ballot_item.is_contest_office %}
             {% for candidate_campaign in ballot_item.candidates_list %}
             <h3>{{ candidate_campaign.candidate_name }}</h3>
+                {% if candidate_campaign.fetch_photo_url %}
+                    <img src="{{ candidate_campaign.fetch_photo_url }}" />
+                {% endif %}
                 <div class="action_bar">
                 {# Support Thumbs Up #}
                 {# We are NOT currently supporting #}
@@ -89,8 +92,8 @@
                 {# Ask Friends Question Mark - Asking / Still Deciding #}
                 {# We are NOT currently deciding #}
                 <span id="ask_candidate_campaign_{{ candidate_campaign.id }}" class="space_between_oppose_and_ask" >
-                    <a class="ask_toggle_link" target="_blank" title="Ask Friends"
-                       href="{% url 'support_oppose_deciding:voter_asking_candidate_campaign_view' candidate_campaign.id %}"
+                    <a class="ask_toggle_link" title="Ask Friends"
+                       href="/ux_oak/ask/{{ candidate_campaign.id }}/"
                        id="candidate_campaign_{{ candidate_campaign.id }}">{% comment %} hide linebreak
         {% endcomment %}<img class="ask_off_img" src="/static/site/img/GenericQuestion-26x26.png" width="20" height="20">{% comment %} hide linebreak
         {% endcomment %}<span class="ask_link_text">Ask Friends</span></a>
@@ -277,27 +280,6 @@ $(function() {
                 return false;
             }, 1000);
           return false;
-		});
-	});
-
-$(function() {
-	  $(".ask_toggle_link").live("click", function() {
-	  		var url_from_href = this.href;
-	  		var campaign_id = this.id;
-		  	var ask_span = '#ask_' + campaign_id; {# ask_candidate_campaign_13 #}
-		  	var stop_asking_span = '#stop_asking_' + campaign_id;
-			var dataString = 'data=none';
-			//alert (dataString);return false;
-			$.ajax({
-	      type: "GET",
-	      url: url_from_href,
-	      data: dataString,
-	      success: function() {
-            $(ask_span).toggle();
-	    	$(stop_asking_span).toggle();
-	      }
-	     });
-	    return false;
 		});
 	});
 

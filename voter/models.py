@@ -29,13 +29,18 @@ from validate_email import validate_email
 # See AUTH_USER_MODEL in wevotebase/settings.py
 class VoterManager(BaseUserManager):
 
-    def create_user(self, email=None, password=None):
+    def create_user(self, email=None, username=None, password=None):
         """
         Creates and saves a User with the given email and password.
         """
         now = timezone.now()
         email = self.normalize_email(email)
         user = self.model(email=self.normalize_email(email))
+
+        # python-social-auth will pass the username and email
+        if username:
+            user.fb_username = username
+
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -183,6 +188,10 @@ class Voter(AbstractBaseUser):
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
 
+    # Facebook username
+    # Consider just using username
+    fb_username = models.CharField(unique=True, max_length=20, validators=[alphanumeric], null=True)
+
     # Custom We Vote fields
     middle_name = models.CharField(max_length=255, null=True, blank=True)
 #     image_displayed
@@ -211,9 +220,11 @@ class Voter(AbstractBaseUser):
         super(Voter, self).save(*args, **kwargs)
 
     def get_full_name(self):
-        # return self.first_name+" "+self.last_name
         # The user is identified by their email address
-        return self.email
+        if self.email:
+            return self.email
+
+        return self.first_name+" "+self.last_name
 
     def get_short_name(self):
         # return self.first_name

@@ -4,8 +4,20 @@
     <a class="navbar-brand" href="/"><img src="{{ STATIC_URL }}/site/img/wevote_52h.png"></a>
 
     <div class="navbar-right">
-        <img src="https://pbs.twimg.com/profile_images/584051530958909441/jT5oa-9w.jpg" class="navimg">
-        <div class="navbar-text hidden-sm hidden-xs"><a href="/">Dan</a> is a Voter</div>
+    {% if user and not user.is_anonymous %}
+      <img src="{{ social.profile_photo|default:'https://pbs.twimg.com/profile_images/584051530958909441/jT5oa-9w.jpg' }}" class="navimg">
+      <div class="navbar-text hidden-sm hidden-xs">
+        {% if user.first_name %}
+          <a href="/">{{ user.first_name }}</a> is a Voter
+        {% else %}
+          <span>Hello, Voter!</span>
+        {% endif %}
+      </div>
+    {% else %}
+      <div class="navbar-text">
+        <a href="/login?next={{ request.path }}">Login</a>
+      </div>
+    {% endif %}
     </div>
 
 </div>
