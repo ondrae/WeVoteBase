@@ -45,6 +45,7 @@ INSTALLED_APPS = (
 
     # third party
     'bootstrap3',
+    'social.apps.django_app.default',
     # 'crispy_forms',
 
     # project specific
@@ -81,6 +82,12 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'wevote_social.middleware.SocialMiddleware',
+)
+
+AUTHENTICATION_BACKENDS = (
+    'social.backends.facebook.FacebookOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
 )
 
 ROOT_URLCONF = 'wevotebase.urls'
@@ -98,6 +105,9 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.media',  # Django Cookbook
                 'django.template.context_processors.static',  # Django Cookbook
+                'social.apps.django_app.context_processors.backends',
+                'social.apps.django_app.context_processors.login_redirect',
+                'wevote_social.context_processors.profile_photo',
             ],
         },
     },
@@ -212,6 +222,23 @@ BOOTSTRAP3 = {
         'inline': 'bootstrap3.renderers.InlineFieldRenderer',
     },
 }
+
+LOGIN_REDIRECT_URL = '/'
+SOCIAL_AUTH_FACEBOOK_KEY = '868492333200013'
+SOCIAL_AUTH_FACEBOOK_SECRET = '6789422f725299afe12bf271ebb59d6b'
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email', 'user_friends']
+SOCIAL_AUTH_PIPELINE = (
+    'social.pipeline.social_auth.social_details',
+    'social.pipeline.social_auth.social_uid',
+    'social.pipeline.social_auth.auth_allowed',
+    'social.pipeline.social_auth.social_user',
+    'social.pipeline.user.get_username',
+    'social.pipeline.social_auth.associate_by_email',
+    'social.pipeline.user.create_user',
+    'social.pipeline.social_auth.associate_user',
+    'social.pipeline.social_auth.load_extra_data',
+    'social.pipeline.user.user_details'
+)
 
 ########### Heroku Settings ###########
 # Comment out to run database locally

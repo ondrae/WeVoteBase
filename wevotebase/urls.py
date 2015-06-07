@@ -53,6 +53,10 @@ urlpatterns = patterns(
     url(r'^tag/', include('tag.urls', namespace="tag")),
     # Django cookbook
     url(r'^js-settings/$', 'utils.views.render_js', {'template_name': 'settings.js'}, name="js_settings"),
+
+    # Social
+    url('social', include('social.apps.django_app.urls', namespace='social')),
+    url('', include('django.contrib.auth.urls', namespace='auth')),
 )
 
 urlpatterns += staticfiles_urlpatterns()  # Django Cookbook
