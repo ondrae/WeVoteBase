@@ -5,4 +5,5 @@
 
 from django.db import models
 
-# Create your models here.
+def import_voting_info_project_from_xml():
+    print "TO BE IMPLEMENTED"

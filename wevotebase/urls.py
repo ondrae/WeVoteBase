@@ -43,6 +43,8 @@ urlpatterns = patterns(
         'import_export_google_civic.urls', namespace="import_export_google_civic")),
     url(r'^import_export_theunitedstatesio/', include(
         'import_export_theunitedstatesio.urls', namespace="import_export_theunitedstatesio")),
+    url(r'^import_export_voting_info_project/', include(
+        'import_export_voting_info_project.urls', namespace="import_export_voting_info_project")),
     url(r'^org/', include('organization.urls', namespace="organization")),
     url(r'^politician_list/', include('politician.urls', namespace="politician_list")),
     url(r'^politician/', include('politician.urls', namespace="politician")),
