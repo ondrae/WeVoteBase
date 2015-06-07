@@ -1,6 +1,7 @@
 # This .gitignore file pulled primarily from https://github.com/github/gitignore/blob/master/Python.gitignore
 # Compiled source #
 ###################
+venv
 *.com
 *.class
 *.dll
