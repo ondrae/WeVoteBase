@@ -9,4 +9,5 @@ from ux_oak import views
 urlpatterns = [
     url(r'^$', views.my_ballot_view, name='my_ballot'),
     url(r'^start/', views.start_view, name='start'),
+    url(r'^ask/(?P<candidate_campaign_id>[0-9]+)/$', views.ask_view, name='ask'),
 ]

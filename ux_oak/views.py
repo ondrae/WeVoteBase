@@ -6,6 +6,7 @@ from django.shortcuts import render
 from election_office_measure.models import BallotItemManager
 from wevote_functions.models import get_voter_device_id, set_voter_device_id
 from voter.models import VoterDeviceLinkManager, VoterManager
+from facebook import FacebookAPI
 
 
 def my_ballot_view(request):
@@ -57,3 +58,15 @@ def start_view(request):
 
     }
     return render(request, 'ux_oak/start.html', template_values)
+
+def ask_view(request, candidate_campaign_id):
+    friends = []
+    if hasattr(request.user, 'social_auth'):
+        facebook = FacebookAPI(request.user.social_auth)
+        friends = facebook.fetch_friends()
+
+    template_values = {
+        'friends': friends
+    }
+
+    return render(request, 'ux_oak/ask.html', template_values)

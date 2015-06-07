@@ -9,4 +9,21 @@
 <p><a href="{% url 'organization:organization_list' %}">Organizations</a></p>
 <p><a href="{% url 'import_export:import_export_index' %}">Import Tools</a></p>
 
-{% endblock %}
+
+<p>
+ <ul>
+ {% if user and not user.is_anonymous %}
+   <li>
+     <span>Hello {{ user.get_full_name|default:"Voter" }}!</span>
+   </li>
+   <li>
+     <a href="{% url 'auth:logout' %}?next={{ request.path }}">Logout</a>
+   </li>
+ {% else %}
+   <li>
+     <a href="{% url 'social:begin' 'facebook' %}?next={{ request.path }}">Login with Facebook</a>
+   </li>
+ {% endif %}
+ </ul>
+</p>
+{%  endblock %}
