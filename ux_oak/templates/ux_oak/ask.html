@@ -8,6 +8,8 @@
 <ul>
 {% for friend in friends %}
     <li>{{friend.name}}</li>
+{% empty %}
+    <li>Your friends aren't using We Vote, yet.</li>
 {% endfor %}
 </ul>
 {% endblock %}
