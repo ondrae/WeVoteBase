@@ -128,6 +128,7 @@ class CandidateCampaign(models.Model):
         verbose_name="google civic election id", max_length=254, null=True, blank=True)
     # The URL for the candidate's campaign web site.
     candidate_url = models.URLField(verbose_name='website url of candidate campaign', blank=True, null=True)
+    candidate_photo_url = models.URLField(verbose_name='candidate portrait url of candidate', blank=True, null=True)
     facebook_url = models.URLField(verbose_name='facebook url of candidate campaign', blank=True, null=True)
     twitter_url = models.URLField(verbose_name='twitter url of candidate campaign', blank=True, null=True)
     google_plus_url = models.URLField(verbose_name='google plus url of candidate campaign', blank=True, null=True)
@@ -138,8 +139,13 @@ class CandidateCampaign(models.Model):
     phone = models.CharField(verbose_name="candidate campaign email", max_length=254, null=True, blank=True)
 
     def fetch_photo_url(self):
-        politician_manager = PoliticianManager()
-        return politician_manager.fetch_photo_url(self.politician_id)
+        if self.candidate_photo_url:
+            return self.candidate_photo_url
+        else:
+            return "http://votersedge.org/sites/all/modules/map/modules/map_proposition/images/politicians/2662.jpg"
+        # else:
+        #     politician_manager = PoliticianManager()
+        #     return politician_manager.fetch_photo_url(self.politician_id)
 
     # We override the save function so we can auto-generate id_we_vote
     def save(self, *args, **kwargs):

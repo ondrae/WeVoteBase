@@ -41,6 +41,8 @@ urlpatterns = patterns(
     url(r'^import_export/', include('import_export.urls', namespace="import_export")),
     url(r'^import_export_google_civic/', include(
         'import_export_google_civic.urls', namespace="import_export_google_civic")),
+    url(r'^import_export_maplight/', include(
+        'import_export_maplight.urls', namespace="import_export_maplight")),
     url(r'^import_export_theunitedstatesio/', include(
         'import_export_theunitedstatesio.urls', namespace="import_export_theunitedstatesio")),
     url(r'^import_export_voting_info_project/', include(
