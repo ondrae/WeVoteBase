@@ -24,6 +24,10 @@ class FacebookAPI(object):
 
         return friends
 
+    def profile_url(self):
+        # Facebook will 302 redirect to the profile photo.
+        return u'https://graph.facebook.com/{0}/picture'.format(self.social_user.uid)
+
     def _request(self, **params):
         url = u'https://graph.facebook.com/{0}/' \
               u'friends?fields=id,name,location,picture' \
