@@ -4,10 +4,11 @@
 {% block title %}My Ballot{% endblock %}
 
 {%  block content %}
-<h1>My Ballot</h1>
+<h1 class="font-effect-fire-animation">My Ballot</h1>
 
 {% if ballot_item_list %}
     {% for ballot_item in ballot_item_list %}
+    <div class="panel panel-info">
         <h2>{{ ballot_item.display_ballot_item }} {# <a href="#{% url 'ux_oak:politician_detail' ballot_item.id %}">(info)</a> #}</h2>
         {% if ballot_item.is_contest_office %}
             {% for candidate_campaign in ballot_item.candidates_list %}
@@ -157,6 +158,7 @@
         {% elif ballot_item.is_contest_measure %}
             <h3>Is measure</h3>
         {% endif %}
+    </div>
     {% endfor %}
 {% else %}
     <p>(empty ballot)</p>
