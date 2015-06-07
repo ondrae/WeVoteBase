@@ -27,7 +27,7 @@ PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 SECRET_KEY = '(-ack%@p)$dpr-4*q$a@ir%64(_(q6!ve@=r&5i*@-fw6bjnqq'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+#DEBUG = True
 
 # Comment out when running Heroku
 ALLOWED_HOSTS = []
