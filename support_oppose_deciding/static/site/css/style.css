@@ -8,12 +8,15 @@
        \/          \/                      \/                 \/ 
 
 */
-h1 { font-family: 'Alfa Slab One', cursive; font-size: 36px;}
-h2 { font-family: 'Alfa Slab One', cursive; text-align: center; margin-left: auto; margin-right: auto; }
+h1 { font-family: 'Open Sans', sans-serif; font-size: 24px; font-weight: bold;}
+h2 { font-family: 'Open Sans', sans-serif; font-size: 18px; font-weight: bold; text-align: center; margin-left: auto; margin-right: auto; }
 h3 {
     font-family: 'Rock Salt', cursive;
     font-size: 14px;
+
 }
+body { font-family: 'Open Sans', sans-serif; }
+
 .support_on_link, .oppose_on_link, .ask_on_link {
     font-weight: bold;
 }

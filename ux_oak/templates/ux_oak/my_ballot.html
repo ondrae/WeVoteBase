@@ -4,7 +4,7 @@
 {% block title %}My Ballot{% endblock %}
 
 {%  block content %}
-<h1 class="font-effect-fire-animation">My Ballot</h1>
+<h1>My Ballot</h1>
 
 {% if ballot_item_list %}
     {% for ballot_item in ballot_item_list %}
@@ -12,10 +12,17 @@
         <h2>{{ ballot_item.display_ballot_item }} {# <a href="#{% url 'ux_oak:politician_detail' ballot_item.id %}">(info)</a> #}</h2>
         {% if ballot_item.is_contest_office %}
             {% for candidate_campaign in ballot_item.candidates_list %}
-            <h3>{{ candidate_campaign.candidate_name }}</h3>
-                {% if candidate_campaign.fetch_photo_url %}
-                    <img src="{{ candidate_campaign.fetch_photo_url }}" />
-                {% endif %}
+            <div style="padding: 20px">
+            <div style="col-xs">
+                <div style="float: left">
+                    {% if candidate_campaign.fetch_photo_url %}
+                        <img style="max-height: 60px" src="{{ candidate_campaign.fetch_photo_url }}" />
+                    {% endif %}
+                </div>
+                <div>
+                    <h3>{{ candidate_campaign.candidate_name }}</h3>
+                </div>
+            </div>
                 <div class="action_bar">
                 {# Support Thumbs Up #}
                 {# We are NOT currently supporting #}
@@ -157,6 +164,7 @@
                     $(".candidate_campaign_{{ candidate_campaign.id }}_deciders").click(openCandidateCampaignPositionsPopup);
                 });
                 </script>
+            </div>
             {% endfor %}
         {% elif ballot_item.is_contest_measure %}
             <h3>Is measure</h3>
