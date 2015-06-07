@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
-from import_export_maplight.models import import_maplight_from_json_view
+from import_export_maplight.models import import_maplight_from_json_sample_files
 
 def import_maplight_from_json_view(request):
     """
@@ -16,7 +16,7 @@ def import_maplight_from_json_view(request):
     if not request.user.is_authenticated():
         return redirect('/admin')
 
-    import_maplight_from_json_sample_files()
+    import_maplight_from_json_sample_files(request)
 
     messages.add_message(request, messages.INFO, 'Maplight sample data imported.')
 

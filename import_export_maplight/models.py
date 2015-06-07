@@ -3,6 +3,7 @@
 # -*- coding: UTF-8 -*-
 
 from django.db import models
+from election_office_measure.models import CandidateCampaign
 import json
 
 class MapLightContest(models.Model):
@@ -52,7 +53,7 @@ class MapLightPolitician(models.Model):
 MAPLIGHT_SAMPLE_BALLOT_JSON_FILE = "import_export_maplight/import_data/maplight_sf_ballot_sample.json"
 MAPLIGHT_SAMPLE_CONTEST_JSON_FILE = "import_export_maplight/import_data/contest_{contest_id}.json"
 
-def import_maplight_from_json_view(request):
+def import_maplight_from_json_sample_files(request):
     print "TO BE IMPLEMENTED"
     load_from_url = False
     if load_from_url:
@@ -75,11 +76,32 @@ def import_maplight_from_json_view(request):
     if structured_json and len(structured_json):
         # Parse the JSON here
         contests_structured_json = structured_json
-        for one_contest in contests_structured_json:
-            if one_contest['type'] == "office":
-                import_maplight_contest_from_json(request, one_contest)
+        for contest_id in contests_structured_json:
+            contest_structured_json = contests_structured_json[contest_id]
+            if contest_structured_json['type'] == "office":
+                office_structured_json = contest_structured_json['office']
+            # With the contest_id, we can look up who is running
+            json_file_with_the_data_from_this_contest = MAPLIGHT_SAMPLE_CONTEST_JSON_FILE.format(contest_id=contest_id)
+
+            with open(json_file_with_the_data_from_this_contest) as json_data:
+                contest_office_structured_json = json.load(json_data)
+
+            # import_maplight_contest_from_json(request, contest_office_structured_json)
+            isolate_politician_json_from_contest_office_json(request, contest_office_structured_json)
             # Also add measure
 
 def import_maplight_contest_from_json(request, one_contest):
     print "Test"
 
+
+def isolate_politician_json_from_contest_office_json(request, contest_office_structured_json):
+    for politician_id in contest_office_structured_json:
+        politician_structured_json = contest_office_structured_json[politician_id]
+        maplight_photo = fetch_maplight_photo(request, politician_structured_json)
+        if maplight_photo:
+            print maplight_photo
+            # candidate_campaign = CandidateCampaign()
+
+
+def fetch_maplight_photo(request, politician_structured_json):
+    return politician_structured_json['photo']
