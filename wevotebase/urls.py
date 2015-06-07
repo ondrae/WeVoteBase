@@ -55,6 +55,7 @@ urlpatterns = patterns(
     url(r'^js-settings/$', 'utils.views.render_js', {'template_name': 'settings.js'}, name="js_settings"),
 
     # Social
+    url('', include('wevote_social.urls', namespace='wevote_social')),
     url('social', include('social.apps.django_app.urls', namespace='social')),
     url('', include('django.contrib.auth.urls', namespace='auth')),
 )
