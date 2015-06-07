@@ -7,11 +7,8 @@ logger = logging.getLogger()
 class FacebookAPI(object):
     """API to Facebook's opengraph."""
 
-    def __init__(self, social_auth):
-        self.social_user = social_auth.filter(
-            provider='facebook',
-        ).first()
-        print self.social_user
+    def __init__(self, social_user):
+        self.social_user = social_user
 
     def fetch_friends(self):
         request = self._request()

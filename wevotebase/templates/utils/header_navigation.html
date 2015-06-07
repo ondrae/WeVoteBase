@@ -7,7 +7,7 @@
 
     <div class="navbar-right">
     {% if user and not user.is_anonymous %}
-      <img src="{{ profile_photo|default:'https://pbs.twimg.com/profile_images/584051530958909441/jT5oa-9w.jpg' }}" class="navimg">
+      <img src="{{ social.profile_photo|default:'https://pbs.twimg.com/profile_images/584051530958909441/jT5oa-9w.jpg' }}" class="navimg">
       <div class="navbar-text">
         {% if user.first_name %}
           <a href="/">{{ user.first_name }}</a> is a Voter
