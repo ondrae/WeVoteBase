@@ -23,6 +23,13 @@
         </ul>
     </li>
 
+    <li>MapLight API
+    (<a href="{% url 'import_export_maplight:import_maplight_from_json_view' %}">import json files now</a>)
+        <ul>
+            <li>JSON Ballot info for San Francisco address</li>
+        </ul>
+    </li>
+
     <li>Sample Voting Info Project XML File
     (<a href="{% url 'import_export_voting_info_project:import_voting_info_project_from_xml_view' %}">import XML now</a>)
         <ul>
@@ -41,6 +48,7 @@
         <li>Legislators, Current => Politician</li>
     </ul>
 </li>
+
 <li>Google Civic API
     (<a href="{% url 'import_export:transfer_from_google_civic' %}">transfer now</a>)
     <ul>
@@ -48,13 +56,18 @@
         <li>Politician Linkage to Candidate Campaign</li>
     </ul>
 </li>
+
+<li>MapLight API
+    (<a href="{% url 'import_export:transfer_from_maplight' %}">transfer now</a>)
+    <ul>
+        <li>MapLightCandidate (using the photo)</li>
+    </ul>
+</li>
+
+<li>We Vote Sample Positions
+    (<a href="{% url 'import_export:import_sample_positions' %}">import now</a>)
+</li>
 </ul>
 
-
-<p><a href="{% url 'import_export:import_sample_positions' %}">Import sample Positions Data</a></p>
-
-<p><a href="{% url 'import_export_maplight:import_maplight_from_json_view' %}">Import sample MapLight Data</a></p>
-
-
-{# TODO: Correct the url <p><a href="{% url 'start:ux_oak' %}">Back to home</a></p>  #}
+<p><a href="{% url 'ux_oak_start:start' %}">Back to home</a></p>
 {% endblock %}

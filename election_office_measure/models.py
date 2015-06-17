@@ -85,6 +85,61 @@ class ContestOffice(models.Model):
         super(ContestOffice, self).save(*args, **kwargs)
 
 
+class ContestOfficeManager(models.Model):
+
+    def __unicode__(self):
+        return "ContestOfficeManager"
+
+    def retrieve_contest_office_from_id(self, contest_office_id):
+        contest_office_manager = ContestOfficeManager()
+        return contest_office_manager.retrieve_contest_office(contest_office_id)
+
+    def retrieve_contest_office_from_id_maplight(self, id_maplight):
+        contest_office_id = 0
+        contest_office_manager = ContestOfficeManager()
+        return contest_office_manager.retrieve_contest_office(contest_office_id, id_maplight)
+
+    def fetch_contest_office_id_from_id_maplight(self, id_maplight):
+        contest_office_id = 0
+        contest_office_manager = ContestOfficeManager()
+        results = contest_office_manager.retrieve_contest_office(contest_office_id, id_maplight)
+        if results['success']:
+            return results['contest_office_id']
+        return 0
+
+    # NOTE: searching by all other variables seems to return a list of objects
+    def retrieve_contest_office(self, contest_office_id, id_maplight=None):
+        error_result = False
+        exception_does_not_exist = False
+        exception_multiple_object_returned = False
+        contest_office_on_stage = ContestOffice()
+
+        try:
+            if contest_office_id > 0:
+                contest_office_on_stage = ContestOffice.objects.get(id=contest_office_id)
+                contest_office_id = contest_office_on_stage.id
+            elif len(id_maplight) > 0:
+                contest_office_on_stage = ContestOffice.objects.get(id_maplight=id_maplight)
+                contest_office_id = contest_office_on_stage.id
+        except ContestOffice.MultipleObjectsReturned as e:
+            handle_record_found_more_than_one_exception(e)
+            exception_multiple_object_returned = True
+        except ContestOffice.DoesNotExist as e:
+            handle_exception_silently(e)
+            exception_does_not_exist = True
+
+        results = {
+            'success':                  True if contest_office_id > 0 else False,
+            'error_result':             error_result,
+            'DoesNotExist':             exception_does_not_exist,
+            'MultipleObjectsReturned':  exception_multiple_object_returned,
+            'contest_office_found':     True if contest_office_id > 0 else False,
+            'contest_office_id':        contest_office_id,
+            'contest_office':           contest_office_on_stage,
+        }
+        return results
+
+
 class CandidateCampaignList(models.Model):
     """
     This is a class to make it easy to retrieve lists of Candidates
@@ -107,6 +162,8 @@ class CandidateCampaign(models.Model):
     # We keep the last value in WeVoteSetting.id_we_vote_last_candidate_campaign_integer
     id_we_vote = models.CharField(
         verbose_name="we vote permanent id", max_length=255, default=None, null=True, blank=True, unique=True)
+    id_maplight = models.CharField(
+        verbose_name="maplight candidate id", max_length=255, default=None, null=True, blank=True, unique=True)
     # election link to local We Vote Election entry. During setup we need to allow this to be null.
     election_id = models.IntegerField(verbose_name="election unique identifier", null=True, blank=True)
     # The internal We Vote id for the ContestOffice that this candidate is competing for.
@@ -121,6 +178,7 @@ class CandidateCampaign(models.Model):
     party = models.CharField(verbose_name="party", max_length=254, null=True, blank=True)
     # A URL for a photo of the candidate.
     photo_url = models.CharField(verbose_name="photoUrl", max_length=254, null=True, blank=True)
+    photo_url_from_maplight = models.URLField(verbose_name='candidate portrait url of candidate', blank=True, null=True)
     # The order the candidate appears on the ballot for this contest.
     order_on_ballot = models.CharField(verbose_name="order on ballot", max_length=254, null=True, blank=True)
     # The unique ID of the election containing this contest. (Provided by Google Civic)
@@ -128,7 +186,6 @@ class CandidateCampaign(models.Model):
         verbose_name="google civic election id", max_length=254, null=True, blank=True)
     # The URL for the candidate's campaign web site.
     candidate_url = models.URLField(verbose_name='website url of candidate campaign', blank=True, null=True)
-    candidate_photo_url = models.URLField(verbose_name='candidate portrait url of candidate', blank=True, null=True)
     facebook_url = models.URLField(verbose_name='facebook url of candidate campaign', blank=True, null=True)
     twitter_url = models.URLField(verbose_name='twitter url of candidate campaign', blank=True, null=True)
     google_plus_url = models.URLField(verbose_name='google plus url of candidate campaign', blank=True, null=True)
@@ -139,10 +196,13 @@ class CandidateCampaign(models.Model):
     phone = models.CharField(verbose_name="candidate campaign email", max_length=254, null=True, blank=True)
 
     def fetch_photo_url(self):
-        if self.candidate_photo_url:
-            return self.candidate_photo_url
+        if self.photo_url_from_maplight:
+            return self.photo_url_from_maplight
+        elif self.photo_url:
+            return self.photo_url
         else:
-            return "http://votersedge.org/sites/all/modules/map/modules/map_proposition/images/politicians/2662.jpg"
+            return ""
+            # "http://votersedge.org/sites/all/modules/map/modules/map_proposition/images/politicians/2662.jpg"
         # else:
         #     politician_manager = PoliticianManager()
         #     return politician_manager.fetch_photo_url(self.politician_id)
@@ -164,7 +224,86 @@ class CandidateCampaign(models.Model):
                 site_unique_id_prefix=site_unique_id_prefix,
                 next_integer=next_local_integer,
             )
+        if self.id_maplight == "":  # We want this to be unique IF there is a value, and otherwise "None"
+            self.id_maplight = None
         super(CandidateCampaign, self).save(*args, **kwargs)
+
+
+class CandidateCampaignManager(models.Model):
+
+    def __unicode__(self):
+        return "CandidateCampaignManager"
+
+    def retrieve_candidate_campaign_from_id(self, candidate_campaign_id):
+        candidate_campaign_manager = CandidateCampaignManager()
+        return candidate_campaign_manager.retrieve_candidate_campaign(candidate_campaign_id)
+
+    def retrieve_candidate_campaign_from_id_we_vote(self, id_we_vote):
+        candidate_campaign_id = 0
+        candidate_campaign_manager = CandidateCampaignManager()
+        return candidate_campaign_manager.retrieve_candidate_campaign(candidate_campaign_id, id_we_vote)
+
+    def fetch_candidate_campaign_id_from_id_we_vote(self, id_we_vote):
+        candidate_campaign_id = 0
+        candidate_campaign_manager = CandidateCampaignManager()
+        results = candidate_campaign_manager.retrieve_candidate_campaign(candidate_campaign_id, id_we_vote)
+        if results['success']:
+            return results['candidate_campaign_id']
+        return 0
+
+    def retrieve_candidate_campaign_from_id_maplight(self, candidate_id_maplight):
+        candidate_campaign_id = 0
+        id_we_vote = ''
+        candidate_campaign_manager = CandidateCampaignManager()
+        return candidate_campaign_manager.retrieve_candidate_campaign(
+            candidate_campaign_id, id_we_vote, candidate_id_maplight)
+
+    def retrieve_candidate_campaign_from_candidate_name(self, candidate_name):
+        candidate_campaign_id = 0
+        id_we_vote = ''
+        candidate_id_maplight = ''
+        candidate_campaign_manager = CandidateCampaignManager()
+        return candidate_campaign_manager.retrieve_candidate_campaign(
+            candidate_campaign_id, id_we_vote, candidate_id_maplight, candidate_name)
+
+    # NOTE: searching by all other variables seems to return a list of objects
+    def retrieve_candidate_campaign(
+            self, candidate_campaign_id, id_we_vote=None, candidate_id_maplight=None, candidate_name=None):
+        error_result = False
+        exception_does_not_exist = False
+        exception_multiple_object_returned = False
+        candidate_campaign_on_stage = CandidateCampaign()
+
+        try:
+            if candidate_campaign_id > 0:
+                candidate_campaign_on_stage = CandidateCampaign.objects.get(id=candidate_campaign_id)
+                candidate_campaign_id = candidate_campaign_on_stage.id
+            elif len(id_we_vote) > 0:
+                candidate_campaign_on_stage = CandidateCampaign.objects.get(id_we_vote=id_we_vote)
+                candidate_campaign_id = candidate_campaign_on_stage.id
+            elif candidate_id_maplight > 0 and candidate_id_maplight != "":
+                candidate_campaign_on_stage = CandidateCampaign.objects.get(id_maplight=candidate_id_maplight)
+                candidate_campaign_id = candidate_campaign_on_stage.id
+            elif len(candidate_name) > 0:
+                candidate_campaign_on_stage = CandidateCampaign.objects.get(candidate_name=candidate_name)
+                candidate_campaign_id = candidate_campaign_on_stage.id
+        except CandidateCampaign.MultipleObjectsReturned as e:
+            handle_record_found_more_than_one_exception(e)
+            exception_multiple_object_returned = True
+        except CandidateCampaign.DoesNotExist as e:
+            handle_exception_silently(e)
+            exception_does_not_exist = True
+
+        results = {
+            'success':                  True if candidate_campaign_id > 0 else False,
+            'error_result':             error_result,
+            'DoesNotExist':             exception_does_not_exist,
+            'MultipleObjectsReturned':  exception_multiple_object_returned,
+            'candidate_campaign_found': True if candidate_campaign_id > 0 else False,
+            'candidate_campaign_id':    candidate_campaign_id,
+            'candidate_campaign':       candidate_campaign_on_stage,
+        }
+        return results
 
 
 class ContestMeasure(models.Model):
@@ -329,7 +468,7 @@ class BallotItem(models.Model):
 class BallotItemManager(models.Model):
 
     def retrieve_all_ballot_items_for_voter(self, voter_id, election_id=0):
-        ballot_item_list = BallotItem.objects.order_by('ballot_item_label')
+        ballot_item_list = BallotItem.objects.order_by('ballot_order')
 
         results = {
             'election_id':      election_id,
@@ -349,57 +488,3 @@ class BallotItemManager(models.Model):
         # Retrieve all of the measure_contests in each of those jurisdictions
         return True
 
-
-class CandidateCampaignManager(models.Model):
-
-    def __unicode__(self):
-        return "CandidateCampaignManager"
-
-    def retrieve_candidate_campaign_from_id(self, candidate_campaign_id):
-        candidate_campaign_manager = CandidateCampaignManager()
-        return candidate_campaign_manager.retrieve_candidate_campaign(candidate_campaign_id)
-
-    def retrieve_candidate_campaign_from_id_we_vote(self, id_we_vote):
-        candidate_campaign_id = 0
-        candidate_campaign_manager = CandidateCampaignManager()
-        return candidate_campaign_manager.retrieve_candidate_campaign(candidate_campaign_id, id_we_vote)
-
-    def fetch_candidate_campaign_id_from_id_we_vote(self, id_we_vote):
-        candidate_campaign_id = 0
-        candidate_campaign_manager = CandidateCampaignManager()
-        results = candidate_campaign_manager.retrieve_candidate_campaign(candidate_campaign_id, id_we_vote)
-        if results['success']:
-            return results['candidate_campaign_id']
-        return 0
-
-    # NOTE: searching by all other variables seems to return a list of objects
-    def retrieve_candidate_campaign(self, candidate_campaign_id, id_we_vote=None):
-        error_result = False
-        exception_does_not_exist = False
-        exception_multiple_object_returned = False
-        candidate_campaign_on_stage = CandidateCampaign()
-
-        try:
-            if candidate_campaign_id > 0:
-                candidate_campaign_on_stage = CandidateCampaign.objects.get(id=candidate_campaign_id)
-                candidate_campaign_id = candidate_campaign_on_stage.id
-            elif len(id_we_vote) > 0:
-                candidate_campaign_on_stage = CandidateCampaign.objects.get(id_we_vote=id_we_vote)
-                candidate_campaign_id = candidate_campaign_on_stage.id
-        except CandidateCampaign.MultipleObjectsReturned as e:
-            handle_record_found_more_than_one_exception(e)
-            exception_multiple_object_returned = True
-        except CandidateCampaign.DoesNotExist as e:
-            handle_exception_silently(e)
-            exception_does_not_exist = True
-
-        results = {
-            'success':                  True if candidate_campaign_id > 0 else False,
-            'error_result':             error_result,
-            'DoesNotExist':             exception_does_not_exist,
-            'MultipleObjectsReturned':  exception_multiple_object_returned,
-            'candidate_campaign_found': True if candidate_campaign_id > 0 else False,
-            'candidate_campaign_id':    candidate_campaign_id,
-            'candidate_campaign':       candidate_campaign_on_stage,
-        }
-        return results

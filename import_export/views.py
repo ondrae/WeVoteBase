@@ -7,11 +7,15 @@ from django.contrib.messages import get_messages
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
+from election_office_measure.models import CandidateCampaign, CandidateCampaignManager, ContestMeasure, ContestOffice, \
+    MeasureCampaign
+from exception.models import handle_exception, handle_exception_silently, handle_record_not_found_exception, \
+    handle_record_not_saved_exception
 from import_export.models import transfer_google_civic_voterinfo_cached_data_to_wevote_tables, \
     transfer_theunitedstatesio_cached_data_to_wevote_tables, import_we_vote_organizations_from_json, \
     import_we_vote_candidate_campaigns_from_json, import_we_vote_positions_from_json
+from import_export_maplight.models import MapLightCandidate
 from import_export.serializers import CandidateCampaignSerializer, OrganizationSerializer, PositionSerializer
-from election_office_measure.models import CandidateCampaign, ContestMeasure, ContestOffice, MeasureCampaign
 from organization.models import Organization
 from politician.models import Politician
 from position.models import PositionEntered
@@ -146,3 +150,51 @@ def import_we_vote_sample_positions_data_from_json(request):
 
     return HttpResponseRedirect(reverse('import_export:import_export_index', args=()))
 
+
+def transfer_maplight_data_to_we_vote_tables(request):
+    candidate_campaign_manager = CandidateCampaignManager()
+
+    maplight_candidates_current_query = MapLightCandidate.objects.all()
+
+    for one_candidate_from_maplight_table in maplight_candidates_current_query:
+        found_by_id = False
+        # Try to find a matching candidate
+        results = candidate_campaign_manager.retrieve_candidate_campaign_from_id_maplight(
+            one_candidate_from_maplight_table.candidate_id)
+
+        if not results['success']:
+            print "Candidate NOT found by MapLight id: {name}".format(
+                name=one_candidate_from_maplight_table.candidate_id)
+            results = candidate_campaign_manager.retrieve_candidate_campaign_from_candidate_name(
+                one_candidate_from_maplight_table.display_name)
+
+            if not results['success']:
+                print "Candidate NOT found by display_name: {name}".format(
+                    name=one_candidate_from_maplight_table.display_name)
+                results = candidate_campaign_manager.retrieve_candidate_campaign_from_candidate_name(
+                    one_candidate_from_maplight_table.original_name)
+
+                if not results['success']:
+                    print "Candidate NOT found by original_name: {name}".format(
+                        name=one_candidate_from_maplight_table.original_name)
+                    continue  # Go to the next candidate
+
+        candidate_campaign_on_stage = results['candidate_campaign']
+        print "Candidate {name} found".format(name=candidate_campaign_on_stage.candidate_name)
+
+        try:
+            # Tie the maplight id to our record
+            if not found_by_id:
+                candidate_campaign_on_stage.id_maplight = one_candidate_from_maplight_table.candidate_id
+
+            # Bring over the photo
+            candidate_campaign_on_stage.photo_url_from_maplight = one_candidate_from_maplight_table.photo
+
+            # We can bring over other data as needed, like gender for example
+            candidate_campaign_on_stage.save()
+        except Exception as e:
+            handle_record_not_saved_exception(e)
+
+    messages.add_message(request, messages.INFO, 'MapLight data woven into We Vote tables.')
+
+    return HttpResponseRedirect(reverse('import_export:import_export_index', args=()))

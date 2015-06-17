@@ -10,6 +10,8 @@ urlpatterns = [
     url(r'^$', views.import_export_index, name='import_export_index'),
     url(r'^transfer_from_google_civic/', views.import_export_transfer_google_civic_to_local_tables_view,
         name='transfer_from_google_civic'),
+    url(r'^transfer_from_maplight/', views.transfer_maplight_data_to_we_vote_tables,
+        name='transfer_from_maplight'),
     url(r'^transfer_from_theunitedstatesio/', views.import_export_transfer_theunitedstatesio_to_local_tables_view,
         name='transfer_from_theunitedstatesio'),
     url(r'^position_json/', views.ExportPositionDataToJson, name='position_json'),

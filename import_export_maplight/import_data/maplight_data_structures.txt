@@ -4,6 +4,8 @@ Address: 254 Hartford Street, San Francisco CA 94114
 
 http://votersedge.org/services_open_api/cvg.ballot_v1?apikey=example&address=254%20Hartford%20Street%2C%20San%20Francisco%20CA%2094114&date=#.VUAZi61VhBc
 
+{"O55":{"id":"O55","type":"office","election_date":"2014-11-04","title":"Congressional District 12 - California","office":
+
 CONTEST ITEMS FOR A PARTICULAR BALLOT LOCATION
 
 OFFICE CONTEST
@@ -35,6 +37,9 @@ THIS STUB MAY NOT APPLY TO WE VOTE
 http://votersedge.org/services_open_api/cvg.contest_v1?apikey=example&contest=O55&date=2014-11-02#.VUAam61VhBc
 
 ITEMS IN A GIVEN CONTEST
+
+"office":{"title":"Congressperson","class":"lower","flags":"","statecode":"CA","state":"California",
+"body":"House of Representatives","region_name":"California","district":"12","super_district":"ca"}
 
 POLITICIAN COMPETING FOR AN OFFICE
 [politician_id] => 692

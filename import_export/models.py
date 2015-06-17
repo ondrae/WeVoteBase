@@ -7,9 +7,10 @@ from election_office_measure.models import Election, ContestOffice, CandidateCam
     ContestMeasure, MeasureCampaign, BallotItem
 from exception.models import handle_exception, handle_exception_silently, handle_record_not_found_exception, \
     handle_record_not_saved_exception
-from import_export_theunitedstatesio.models import import_legislators_current_csv, TheUnitedStatesIoLegislatorCurrent
+from import_export_maplight.models import MapLightCandidate
 from import_export_google_civic.models import GoogleCivicElection, GoogleCivicContestOffice, \
     GoogleCivicCandidateCampaign, GoogleCivicContestReferendum
+from import_export_theunitedstatesio.models import import_legislators_current_csv, TheUnitedStatesIoLegislatorCurrent
 import json
 from organization.models import Organization, OrganizationManager
 import os  # Needed to get WE_VOTE_API_KEY from an environment variable
@@ -711,11 +712,12 @@ def import_we_vote_organizations_from_json(request, load_from_uri=False):
                     name=one_organization["name"]))
         except Exception as e:
             handle_record_not_saved_exception(e)
-            messages.add_message(request, messages.ERROR,
-                                 "Could not save Organization, id_we_vote: {id_we_vote}, name: {name}, url: {url}".format(
-                                     id_we_vote=one_organization["id_we_vote"],
-                                     name=one_organization["name"],
-                                     url=one_organization["url"],))
+            messages.add_message(
+                request, messages.ERROR,
+                "Could not save Organization, id_we_vote: {id_we_vote}, name: {name}, url: {url}".format(
+                    id_we_vote=one_organization["id_we_vote"],
+                    name=one_organization["name"],
+                    url=one_organization["url"],))
 
 
 def import_we_vote_candidate_campaigns_from_json(request, load_from_uri=False):
