@@ -8,8 +8,8 @@ from election_office_measure.models import Election, ContestOffice, CandidateCam
 from exception.models import handle_exception, handle_exception_silently, handle_record_not_found_exception, \
     handle_record_not_saved_exception
 from import_export_maplight.models import MapLightCandidate
-from import_export_google_civic.models import GoogleCivicElection, GoogleCivicContestOffice, \
-    GoogleCivicCandidateCampaign, GoogleCivicContestReferendum
+from import_export_google_civic.models import GoogleCivicBallotItem, GoogleCivicBallotItemManager, \
+    GoogleCivicElection, GoogleCivicContestOffice, GoogleCivicCandidateCampaign, GoogleCivicContestReferendum
 from import_export_theunitedstatesio.models import import_legislators_current_csv, TheUnitedStatesIoLegislatorCurrent
 import json
 from organization.models import Organization, OrganizationManager
@@ -17,6 +17,7 @@ import os  # Needed to get WE_VOTE_API_KEY from an environment variable
 from politician.models import Politician
 from position.models import PositionEntered
 import requests
+from wevote_functions.models import value_exists
 
 def import_politician_data_from_theunitedstatesio():
     """
@@ -367,6 +368,7 @@ def google_civic_get_or_create_contest_office(google_civic_candidate_campaign_en
     error_result = False
     ballot_item_on_stage = BallotItem()
     ballot_item_on_stage_found = False
+    google_civic_ballot_item_on_stage = GoogleCivicBallotItem()
     contest_office_on_stage = ContestOffice()
     contest_office_created = False
     google_civic_contest_office_on_stage = GoogleCivicContestOffice()
@@ -447,6 +449,17 @@ def google_civic_get_or_create_contest_office(google_civic_candidate_campaign_en
         handle_record_not_found_exception(e)
 
     try:
+        voter_id = 1
+        if value_exists(google_civic_contest_office_on_stage.ballot_placement):
+            # If the ballot order is specified by Google, use that.
+            local_ballot_order = google_civic_contest_office_on_stage.ballot_placement
+        else:
+            # Pull the ballot order from the
+            google_civic_ballot_item_manager = GoogleCivicBallotItemManager()
+            local_ballot_order = google_civic_ballot_item_manager.fetch_ballot_order(
+                voter_id, google_civic_contest_office_on_stage.google_civic_election_id,
+                google_civic_contest_office_on_stage.district_ocd_id)
+
         if ballot_item_on_stage_found:
             # Update the values
             ballot_item_on_stage.election_id = election_on_stage.id
@@ -454,12 +467,12 @@ def google_civic_get_or_create_contest_office(google_civic_candidate_campaign_en
         else:
             # print "Creating BallotItem"
             ballot_item_on_stage = BallotItem(
-                voter_id=1,
+                voter_id=voter_id,
                 election_id=election_on_stage.id,
                 google_civic_election_id=google_civic_contest_office_on_stage.google_civic_election_id,
                 contest_office_id=contest_office_on_stage.id,
                 # contest_measure_id: Used for measures/referendum/initiatives
-                ballot_order=google_civic_contest_office_on_stage.ballot_placement,
+                ballot_order=local_ballot_order,
                 ballot_item_label=google_civic_contest_office_on_stage.office,
             )
         ballot_item_on_stage.save()
@@ -865,3 +878,4 @@ def import_we_vote_positions_from_json(request, load_from_uri=False):
                                      organization_id_we_vote=one_position["organization_id_we_vote"],
                                      candidate_campaign_id_we_vote=one_position["candidate_campaign_id_we_vote"],
                                  ))
+

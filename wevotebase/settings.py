@@ -58,6 +58,7 @@ INSTALLED_APPS = (
     'import_export_maplight',
     'import_export_theunitedstatesio',
     'import_export_twitter',
+    'import_export_voting_info_project',
     'organization',
     'politician',
     'position',
@@ -67,6 +68,7 @@ INSTALLED_APPS = (
     'tag',
     'twitter',
     'utils',
+    'ux_birch',
     'ux_oak',  # The business logic for this particular version of We Vote
     'wevote_functions',
     'wevote_settings',
@@ -247,7 +249,7 @@ SOCIAL_AUTH_PIPELINE = (
 ########### Heroku Settings ###########
 # Comment out to run database locally
 
-# Parse database configuration from $DATABASE_URL
+# #Parse database configuration from $DATABASE_URL
 # import dj_database_url
 # DATABASES = {}
 # DATABASES['default'] = dj_database_url.config()

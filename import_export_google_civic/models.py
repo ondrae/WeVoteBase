@@ -4,10 +4,12 @@
 # -*- coding: UTF-8 -*-
 
 from django.db import models
-from exception.models import handle_record_not_found_exception
+from exception.models import handle_exception_silently, handle_record_found_more_than_one_exception, \
+    handle_record_not_found_exception
 import os  # Needed to get GOOGLE_CIVIC_API_KEY from an environment variable
 import json
 import requests
+from wevote_functions.models import value_exists
 
 # Set your environment variable with: export GOOGLE_CIVIC_API_KEY=<API KEY HERE>
 if 'GOOGLE_CIVIC_API_KEY' in os.environ:
@@ -177,6 +179,80 @@ class GoogleCivicContestReferendum(models.Model):
     # Has this entry been processed and transferred to the live We Vote tables?
     was_processed = models.BooleanField(verbose_name="is primary election", default=False, null=False, blank=False)
 
+# TODO We need to add an index that forces each triplet of value to be unique
+class GoogleCivicBallotItem(models.Model):
+    """
+    This is a generated table where we store the order items come in from Google Civic
+    """
+    # The unique id of the voter
+    voter_id = models.IntegerField(verbose_name="the voter unique id", unique=True, null=False, blank=False)
+    # The unique ID of this election. (Provided by Google Civic)
+    google_civic_election_id = models.CharField(
+        verbose_name="google civic election id", max_length=20, null=False, unique=True)
+    # An identifier for this district, relative to its scope. For example, the 34th State Senate district
+    # would have id "34" and a scope of stateUpper.
+    district_ocd_id = models.CharField(
+        verbose_name="open civic data id", max_length=254, null=False, blank=False, unique=True)
+    # This is the
+    google_ballot_order = models.SmallIntegerField(
+        verbose_name="the order this item should appear on the ballot", null=True, blank=True, unique=False)
+
+    ballot_order = models.SmallIntegerField(
+        verbose_name="locally calculated order this item should appear on the ballot", null=True, blank=True)
+
+
+class GoogleCivicBallotItemManager(models.Model):
+
+    def save_ballot_item_for_voter(
+            self, voter_id, google_civic_election_id, google_civic_district_ocd_id, google_ballot_order,
+            local_ballot_order):
+        try:
+            # Just try to save. If it is a duplicate entry, the save will fail due to unique requirements
+            google_civic_ballot_item = GoogleCivicBallotItem(voter_id=voter_id,
+                                                             google_civic_election_id=google_civic_election_id,
+                                                             district_ocd_id=google_civic_district_ocd_id,
+                                                             google_ballot_order=google_ballot_order,
+                                                             ballot_order=local_ballot_order,)
+            google_civic_ballot_item.save()
+        except GoogleCivicBallotItem.DoesNotExist as e:
+            handle_exception_silently(e)
+
+    def retrieve_ballot_item_for_voter(self, voter_id, google_civic_election_id, google_civic_district_ocd_id):
+        error_result = False
+        exception_does_not_exist = False
+        exception_multiple_object_returned = False
+        google_civic_ballot_item_on_stage = GoogleCivicBallotItem()
+
+        if value_exists(voter_id) and value_exists(google_civic_election_id) and value_exists(
+                google_civic_district_ocd_id):
+            try:
+                google_civic_ballot_item_on_stage = GoogleCivicBallotItem.objects.get(
+                    voter_id=voter_id,
+                    google_civic_election_id=google_civic_election_id,
+                    district_ocd_id=google_civic_district_ocd_id,
+                )
+                google_civic_ballot_item_id = google_civic_ballot_item_on_stage.id
+            except GoogleCivicBallotItem.MultipleObjectsReturned as e:
+                handle_record_found_more_than_one_exception(e)
+                exception_multiple_object_returned = True
+            except GoogleCivicBallotItem.DoesNotExist as e:
+                handle_exception_silently(e)
+                exception_does_not_exist = True
+
+        results = {
+            'success':                          True if google_civic_ballot_item_id > 0 else False,
+            'DoesNotExist':                     exception_does_not_exist,
+            'MultipleObjectsReturned':          exception_multiple_object_returned,
+            'google_civic_ballot_item':         google_civic_ballot_item_on_stage,
+        }
+        return results
+
+    def fetch_ballot_order(self, voter_id, google_civic_election_id, google_civic_district_ocd_id):
+        # voter_id, google_civic_contest_office_on_stage.google_civic_election_id,
+        # google_civic_contest_office_on_stage.district_ocd_id)
+
+        return 3
+
 
 # Complete description of all Google Civic fields:
 # https://developers.google.com/resources/api-libraries/documentation/civicinfo/v2/python/latest/index.html
@@ -302,23 +378,27 @@ def process_contests_from_structured_json(contests_structured_json, google_civic
     or
     "type": "Referendum",
     """
+    local_ballot_order = 0
     for one_contest in contests_structured_json:
+        local_ballot_order += 1
         contest_type = one_contest['type']
         # If the contest is for an elected office, we use the function:
         #   process_contest_office_from_structured_json
         if contest_type in ('General', 'Primary', 'Run-off'):
             process_contest_office_from_structured_json(
-                one_contest, google_civic_election_id, save_to_db)
+                one_contest, google_civic_election_id, local_ballot_order, save_to_db)
 
         # If the contest is a referendum/initiative/measure, we use the function:
         #   process_contest_referendum_from_structured_json
         elif contest_type == 'Referendum':
             process_contest_referendum_from_structured_json(
-                one_contest, google_civic_election_id, save_to_db)
+                one_contest, google_civic_election_id, local_ballot_order, save_to_db)
 
 
 def process_contest_office_from_structured_json(
-        one_contest_office_structured_json, google_civic_election_id, save_to_db):
+        one_contest_office_structured_json, google_civic_election_id, local_ballot_order, save_to_db):
+    voter_id = 1  # TODO Temp
+
     # print "General contest_type"
     office = one_contest_office_structured_json['office']
 
@@ -436,12 +516,16 @@ def process_contest_office_from_structured_json(
                                                                 )
                 # The internal id is needed since there isn't a ContestOffice google identifier
                 internal_contest_office_id = google_civic_contest_office.id
-
-                # Save information about this contest item on the voter's ballot from: ballot_placement
             except Exception as e:
                 handle_record_not_found_exception(e)
 
-    process_candidates_from_structured_json(candidates, google_civic_election_id, internal_contest_office_id, save_to_db)
+        if value_exists(voter_id) and value_exists(google_civic_election_id) and value_exists(district_ocd_id):
+            google_civic_ballot_item_manager = GoogleCivicBallotItemManager()
+            google_civic_ballot_item_manager.save_ballot_item_for_voter(
+                voter_id, google_civic_election_id, district_ocd_id, ballot_placement, local_ballot_order)
+
+    process_candidates_from_structured_json(
+        candidates, google_civic_election_id, internal_contest_office_id, save_to_db)
 
     return
 
@@ -534,7 +618,7 @@ def process_candidates_from_structured_json(
 
 
 def process_contest_referendum_from_structured_json(
-        one_contest_referendum_structured_json, google_civic_election_id, save_to_db):
+        one_contest_referendum_structured_json, google_civic_election_id, local_ballot_order, save_to_db):
     """
     "referendumTitle": "Proposition 45",
     "referendumSubtitle": "Healthcare Insurance. Rate Changes. Initiative Statute.",

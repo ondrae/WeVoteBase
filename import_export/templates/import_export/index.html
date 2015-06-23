@@ -69,5 +69,23 @@
 </li>
 </ul>
 
-<p><a href="{% url 'ux_oak_start:start' %}">Back to home</a></p>
+<h1>Export from We Vote</h1>
+
+<ul>
+
+<li>Export Positions
+    (<a href="{% url 'import_export:positions' %}?format=json">export now</a>)
+</li>
+
+<li>Export Organizations
+    (<a href="{% url 'import_export:organizations' %}?format=json">export now</a>)
+</li>
+
+<li>Export Candidate Campaigns
+    (<a href="{% url 'import_export:candidate_campaigns' %}?format=json">export now</a>)
+</li>
+
+</ul>
+<p>&nbsp;</p>
+<p><a href="{% url 'ux_birch_start:start' %}">Back to home</a></p>{# Could be ux_oak too #}
 {% endblock %}

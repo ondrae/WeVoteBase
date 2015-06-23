@@ -105,3 +105,22 @@ def generate_voter_device_id():
     # Check that this device_id isn't already in the database
     # TODO Implement the check
     return new_device_id
+
+def value_exists(value):
+    """
+    This is a test to see if a positive value exists. All of these return false:
+        "" (an empty string)
+        0 (0 as an integer)
+        0.0 (0 as a float)
+        "0" (0 as a string)
+        NULL
+        FALSE
+        array() (an empty array)
+    :param value:
+    :return: bool
+    """
+    try:
+        value = float(value)
+    except ValueError:
+        pass
+    return bool(value)

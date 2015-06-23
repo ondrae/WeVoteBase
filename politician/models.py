@@ -24,7 +24,7 @@ class Politician(models.Model):
     full_name_google_civic = models.CharField(verbose_name="full name from google civic",
                                               max_length=255, default=None, null=True, blank=True)
     # This is the politician's name assembled from TheUnitedStatesIo first_name + last_name for quick search
-    full_name_assembled = models.CharField(verbose_name="full name from google civic",
+    full_name_assembled = models.CharField(verbose_name="full name assembled from first_name + last_name",
                                            max_length=255, default=None, null=True, blank=True)
 
     FEMALE = 'F'

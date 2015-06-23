@@ -1,0 +1,293 @@
+{# ux_birch/templates/ux_birch/my_ballot.html #}
+{% extends "we_vote_base.html" %}
+
+{% block title %}My Ballot{% endblock %}
+
+{%  block content %}
+<h1>My Ballot</h1>
+
+{% if ballot_item_list %}
+    {% for ballot_item in ballot_item_list %}
+    <div class="panel panel-info">
+        <h2>{{ ballot_item.display_ballot_item }}</h2>
+        {% if ballot_item.is_contest_office %}
+            {% for candidate_campaign in ballot_item.candidates_list %}
+            <div style="padding-left: 20px">
+            <div style="col-xs">
+                <div style="float: left; margin-right: 20px;">
+                    {% if candidate_campaign.fetch_photo_url %}
+                        <img style="max-height: 60px" src="{{ candidate_campaign.fetch_photo_url }}" />
+                    {% endif %}
+                </div>
+                <div>
+                    <h3>{{ candidate_campaign.candidate_name }}</h3>
+                </div>
+
+                <div class="action_bar">
+                {### Support Thumbs Up ###}
+                {# We are NOT currently supporting #}
+                <span id="support_candidate_campaign_{{ candidate_campaign.id }}"  >
+                    <a class="support_toggle_link" target="_blank" title="Support"
+                       href="{% url 'support_oppose_deciding:voter_supporting_candidate_campaign_view' candidate_campaign.id %}"
+                       id="candidate_campaign_{{ candidate_campaign.id }}">{% comment %} hide linebreak
+        {% endcomment %}<img class="support_off_img" src="/static/site/img/GenericThumbsUp-26x26.png" width="20" height="20"></a>
+                </span>
+                {# We ARE currently supporting #}
+                <span id="stop_supporting_candidate_campaign_{{ candidate_campaign.id }}"  style="display:none;" >
+                    <a class="support_toggle_link support_on_link" target="_blank" title="Stop Supporting"
+                       href="{% url 'support_oppose_deciding:voter_stop_supporting_candidate_campaign_view' candidate_campaign.id %}"
+                       id="candidate_campaign_{{ candidate_campaign.id }}">{% comment %} hide linebreak
+        {% endcomment %}<img class="support_on_img" src="/static/site/img/GenericThumbsUpSelected-26x26.png" width="20" height="20"></a>
+                </span>
+                {# Open popup div that shows the support this candidate has #}
+                <a class='candidate_campaign_supporters_{{ candidate_campaign.id }}'
+                   href='/pos/cand/{{ candidate_campaign.id }}/supporters?f=1'
+                   id='Support For {{ candidate_campaign.candidate_name }}'>{% comment %} hide linebreak
+    {% endcomment %}<span class="support_link_text"><span id="campaign_support_count_{{ candidate_campaign.id }}" class="positions_text" ></span> Support</span></a>
+                <script>
+                {# voter_stance_for_candidate_campaign_view #}
+                {# This makes the previously selected support/opppose choice visible in the interface #}
+                $.getJSON('/sod/cand/{{ candidate_campaign.id }}/voterstance/', { }, function(data) {
+                    $.each(data, function(index, element) {
+                        if(element == "support") {
+                            document.getElementById("support_candidate_campaign_{{ candidate_campaign.id }}").removeAttribute('style');
+                            document.getElementById("support_candidate_campaign_{{ candidate_campaign.id }}").style.display="none";
+                            document.getElementById("stop_supporting_candidate_campaign_{{ candidate_campaign.id }}").removeAttribute('style');
+                        }
+                        else if(element == "oppose") {
+                            document.getElementById("support_candidate_campaign_{{ candidate_campaign.id }}").removeAttribute('style');
+                            document.getElementById("stop_supporting_candidate_campaign_{{ candidate_campaign.id }}").removeAttribute('style');
+                            document.getElementById("stop_supporting_candidate_campaign_{{ candidate_campaign.id }}").style.display="none";
+                        }
+                    });
+                });
+                </script>
+                &nbsp;&nbsp;&nbsp;
+                {### Oppose Thumbs Down ###}
+                {# We are NOT currently opposing #}
+                <span id="oppose_candidate_campaign_{{ candidate_campaign.id }}" class="space_between_support_and_oppose" >
+                    <a class="oppose_toggle_link" target="_blank" title="Oppose"
+                       href="{% url 'support_oppose_deciding:voter_opposing_candidate_campaign_view' candidate_campaign.id %}"
+                       id="candidate_campaign_{{ candidate_campaign.id }}">{% comment %} hide linebreak
+        {% endcomment %}<img class="oppose_off_img" src="/static/site/img/GenericThumbsDown-26x26.png" width="20" height="20"></a>
+                </span>
+                {# We ARE currently opposing #}
+                <span id="stop_opposing_candidate_campaign_{{ candidate_campaign.id }}" style="display:none;" class="space_between_support_and_oppose" >
+                    <a class="oppose_toggle_link oppose_on_link" target="_blank" title="Stop Opposing"
+                       href="{% url 'support_oppose_deciding:voter_stop_opposing_candidate_campaign_view' candidate_campaign.id %}"
+                       id="candidate_campaign_{{ candidate_campaign.id }}">{% comment %} hide linebreak
+        {% endcomment %}<img class="oppose_on_img" src="/static/site/img/GenericThumbsDownSelected-26x26.png" width="20" height="20"></a>
+                </span>
+                {# Open popup div that shows the opposition this candidate has #}
+                <a class='candidate_campaign_opposers_{{ candidate_campaign.id }}'
+                   href='/pos/cand/{{ candidate_campaign.id }}/opposers?f=1'
+                   id='Opposition To {{ candidate_campaign.candidate_name }}'>{% comment %} hide linebreak
+    {% endcomment %}<span class="oppose_link_text"><span id="campaign_oppose_count_{{ candidate_campaign.id }}" class="positions_text" ></span> Oppose</span></a>
+                <script>
+                {# voter_stance_for_candidate_campaign_view #}
+                {# This makes the previously selected support/opppose choice visible in the interface #}
+                $.getJSON('/sod/cand/{{ candidate_campaign.id }}/voterstance/', { }, function(data) {
+                    $.each(data, function(index, element) {
+                        if(element == "oppose") {
+                            document.getElementById("oppose_candidate_campaign_{{ candidate_campaign.id }}").removeAttribute('style');
+                            document.getElementById("oppose_candidate_campaign_{{ candidate_campaign.id }}").style.display="none";
+                            document.getElementById("stop_opposing_candidate_campaign_{{ candidate_campaign.id }}").removeAttribute('style');
+                        }
+                        else if(element == "support") {
+                            document.getElementById("oppose_candidate_campaign_{{ candidate_campaign.id }}").removeAttribute('style');
+                            document.getElementById("stop_opposing_candidate_campaign_{{ candidate_campaign.id }}").removeAttribute('style');
+                            document.getElementById("stop_opposing_candidate_campaign_{{ candidate_campaign.id }}").style.display="none";
+                        }
+                    });
+                });
+                </script>
+                <br />
+                {##### See other 27 positions #####}
+                {# Elements of this "a" tag get used to tell openCandidateCampaignPositionsPopup how to fill the popup #}
+                {# class is a kind of 'key' that tells us that this 'a' tag is the one to use. #}
+                {# The href is the URL that populates the contents of the popup #}
+                {# id contains the title shown in the popup #}
+                <a class='candidate_campaign_any_positions_nf_{{ candidate_campaign.id }}'
+                   href='/pos/cand/{{ candidate_campaign.id }}/anyposition?nf=1'
+                   id='Positions You Are Not Following'>{% comment %} hide linebreak
+    {% endcomment %}See <span id="campaign_any_position_count_{{ candidate_campaign.id }}" class="positions_text" ></span> other positions</a>
+
+                </div>
+
+            </div>
+
+
+
+
+                {# support, oppose, and opinions you can follow counts #}
+                <script>
+                {# positions_count_for_candidate_campaign_any_view #}
+                $.getJSON('/pos/cand/{{ candidate_campaign.id }}/anypositionnfcount/', { }, function(data) {
+                    $.each(data, function(index, element) {
+                        document.getElementById("campaign_any_position_count_{{ candidate_campaign.id }}").innerHTML=element;
+                    });
+                });
+                {# positions_count_for_candidate_campaign_support_view #}
+                $.getJSON('/pos/cand/{{ candidate_campaign.id }}/supportcount/', { }, function(data) {
+                    $.each(data, function(index, element) {
+                        document.getElementById("campaign_support_count_{{ candidate_campaign.id }}").innerHTML=element;
+                    });
+                });
+                {# positions_count_for_candidate_campaign_oppose_view #}
+                $.getJSON('/pos/cand/{{ candidate_campaign.id }}/opposecount/', { }, function(data) {
+                    $.each(data, function(index, element) {
+                        document.getElementById("campaign_oppose_count_{{ candidate_campaign.id }}").innerHTML=element;
+                    });
+                });
+                {% comment %}
+                Whenever a link to see the supporters positions is clicked, we show it in a popup div
+                This candidate_campaign_24_supporters link is generated in
+                position/views.py assemble_candidate_campaign_position_stance_html
+                {% endcomment %}
+                $(function() {
+                    $(".candidate_campaign_any_positions_nf_{{ candidate_campaign.id }}").click(openCandidateCampaignPositionsPopup);
+                    $(".candidate_campaign_supporters_{{ candidate_campaign.id }}").click(openCandidateCampaignPositionsPopup);
+                    $(".candidate_campaign_opposers_{{ candidate_campaign.id }}").click(openCandidateCampaignPositionsPopup);
+                });
+                </script>
+            </div>
+            {% endfor %}
+        {% elif ballot_item.is_contest_measure %}
+            <h3>Is measure</h3>
+        {% endif %}
+    </div>
+    {% endfor %}
+{% else %}
+    <p>(empty ballot)</p>
+{% endif %}
+
+
+{# This is a DIV which gets populated with endorsement info each time someone clicks a CandidateCampaigns positions #}
+<div id="candidate_campaign_positions_popup" title="Positions"></div>
+
+<script language="javascript" type="text/javascript">
+var openCandidateCampaignPositionsPopup = function(){
+    var url_from_href = this.href;
+    var title_text = this.id;
+    var opt = {
+            autoOpen: false,
+            modal: true,
+            width: 450,
+            height: 460,
+            title: title_text
+    };
+    $('#candidate_campaign_positions_popup').load(url_from_href); {# Pull the page content via ajax #}
+    $('#candidate_campaign_positions_popup').dialog(opt).dialog('open');
+
+    return false; {# We return false so the a doesn't navigation to the href #}
+};
+var we_vote_delay = (function() {
+    var timer = 0;
+    return function(callback, ms) {
+        clearTimeout(timer);
+        timer = setTimeout(callback, ms);
+    };
+})();
+
+{# Toggle between personal support & oppose states #}
+$(function() {
+	  $(".support_toggle_link").live("click", function() {
+	  		var url_from_href = this.href;
+	  		var campaign_id_string = this.id;
+            var campaign_id = campaign_id_string.match(/\d+/)[0]; // Finds the first number and ignores the rest
+		  	var support_span = '#support_' + campaign_id_string; {# support_candidate_campaign_13 #}
+		  	var stop_supporting_span = '#stop_supporting_' + campaign_id_string;
+		  	var oppose_span = '#oppose_' + campaign_id_string; {# oppose_candidate_campaign_13 #}
+		  	var stop_opposing_span = '#stop_opposing_' + campaign_id_string;
+			var dataString = 'data=none';
+			//alert (dataString);return false;
+			$.ajax({
+              type: "GET",
+              url: url_from_href,
+              data: dataString,
+              success: function() {
+                if($(oppose_span+':visible').length == 0)
+                {
+                    $(oppose_span).toggle();
+                    $(stop_opposing_span).toggle();
+                }
+                $(support_span).toggle();
+                $(stop_supporting_span).toggle();
+              }
+            });
+            // Refresh the positions lines
+            // We introduce a delay before this is called so the position has time to be saved.
+          {# positions_count_for_candidate_campaign_support_view #}
+            we_vote_delay(function() {
+                $.getJSON('/pos/cand/'+campaign_id+'/supportcount/', { }, function(data) {
+                    $.each(data, function (index, element) {
+                        document.getElementById("campaign_support_count_" + campaign_id).innerHTML = element;
+                    });
+                });
+                $.getJSON('/pos/cand/'+campaign_id+'/opposecount/', { }, function(data) {
+                    $.each(data, function(index, element) {
+                        document.getElementById("campaign_oppose_count_" + campaign_id).innerHTML=element;
+                    });
+                });
+                return false;
+            }, 1000);
+	    return false;
+		});
+	});
+
+$(function() {
+	  $(".oppose_toggle_link").live("click", function() {
+	  		var url_from_href = this.href;
+	  		var campaign_id_string = this.id;
+            var campaign_id = campaign_id_string.match(/\d+/)[0]; // Finds the first number and ignores the rest
+		  	var support_span = '#support_' + campaign_id_string; {# support_candidate_campaign_13 #}
+		  	var stop_supporting_span = '#stop_supporting_' + campaign_id_string;
+		  	var oppose_span = '#oppose_' + campaign_id_string; {# oppose_candidate_campaign_13 #}
+		  	var stop_opposing_span = '#stop_opposing_' + campaign_id_string;
+			var dataString = 'data=none';
+			//alert (dataString);return false;
+			$.ajax({
+              type: "GET",
+              url: url_from_href,
+              data: dataString,
+              success: function() {
+                if($(support_span+':visible').length == 0)
+                {
+                    $(support_span).toggle();
+                    $(stop_supporting_span).toggle();
+                }
+                $(oppose_span).toggle();
+                $(stop_opposing_span).toggle();
+              }
+            });
+            // Refresh the positions lines
+            // We introduce a delay before this is called so the position has time to be saved.
+            we_vote_delay(function() {
+                $.getJSON('/pos/cand/'+campaign_id+'/supportcount/', { }, function(data) {
+                    $.each(data, function (index, element) {
+                        document.getElementById("campaign_support_count_" + campaign_id).innerHTML = element;
+                    });
+                });
+                $.getJSON('/pos/cand/'+campaign_id+'/opposecount/', { }, function(data) {
+                    $.each(data, function(index, element) {
+                        document.getElementById("campaign_oppose_count_" + campaign_id).innerHTML=element;
+                    });
+                });
+                return false;
+            }, 1000);
+          return false;
+		});
+	});
+
+</script>
+
+    <br />
+    <br />
+    <br />
+    <p><a href="{% url 'ux_birch_start:start' %}">See admin tools</a></p>
+    <br />
+    <br />
+    <br />
+
+
+{% endblock %}

@@ -22,7 +22,7 @@ from position.models import PositionEntered
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-
+from wevote_functions.models import value_exists
 
 
 # http://localhost:8000/import_export/
@@ -152,6 +152,24 @@ def import_we_vote_sample_positions_data_from_json(request):
 
 
 def transfer_maplight_data_to_we_vote_tables(request):
+    # TODO We need to perhaps set up a table for these mappings that volunteers can add to?
+    #  We need a plan for how volunteers can help us add to these mappings
+    # One possibility -- ask volunteers to update this Google Sheet, then write a csv importer:
+    #  https://docs.google.com/spreadsheets/d/1havD7GCxmBhi-zLLMdOpSJlU_DtBjvb5IJNiXgno9Bk/edit#gid=0
+    politician_name_mapping_list = []
+    one_mapping = {
+        "google_civic_name": "Betty T. Yee",
+        "maplight_display_name": "Betty Yee",
+        "maplight_original_name": "Betty T Yee",
+    }
+    politician_name_mapping_list.append(one_mapping)
+    one_mapping = {
+        "google_civic_name": "Edmund G. \"Jerry\" Brown",
+        "maplight_display_name": "Jerry Brown",
+        "maplight_original_name": "",
+    }
+    politician_name_mapping_list.append(one_mapping)
+
     candidate_campaign_manager = CandidateCampaignManager()
 
     maplight_candidates_current_query = MapLightCandidate.objects.all()
@@ -177,10 +195,29 @@ def transfer_maplight_data_to_we_vote_tables(request):
                 if not results['success']:
                     print "Candidate NOT found by original_name: {name}".format(
                         name=one_candidate_from_maplight_table.original_name)
-                    continue  # Go to the next candidate
+
+                    one_mapping_google_civic_name = ''
+                    for one_mapping_found in politician_name_mapping_list:
+                        if value_exists(one_mapping_found['maplight_display_name']) \
+                                and one_mapping_found['maplight_display_name'] == one_candidate_from_maplight_table.display_name:
+                            one_mapping_google_civic_name = one_mapping_found['google_civic_name']
+                            break
+                    if value_exists(one_mapping_google_civic_name):
+                        results = candidate_campaign_manager.retrieve_candidate_campaign_from_candidate_name(
+                            one_mapping_google_civic_name)
+                    if not results['success'] or not value_exists(one_mapping_google_civic_name):
+                        print "Candidate NOT found by mapping to google_civic name: {name}".format(
+                            name=one_mapping_google_civic_name)
+
+                        continue  # Go to the next candidate
 
         candidate_campaign_on_stage = results['candidate_campaign']
-        print "Candidate {name} found".format(name=candidate_campaign_on_stage.candidate_name)
+
+        # Just in case the logic above let us through to here accidentally without a candidate_name value, don't proceed
+        if not value_exists(candidate_campaign_on_stage.candidate_name):
+            continue
+
+        # print "Candidate {name} found".format(name=candidate_campaign_on_stage.candidate_name)
 
         try:
             # Tie the maplight id to our record

@@ -11,10 +11,49 @@ from exception.models import handle_exception, handle_exception_silently, handle
     handle_record_not_deleted_exception, handle_record_not_found_exception, handle_record_not_saved_exception
 from follow.models import FollowOrganizationList
 from organization.models import OrganizationManager
-from position.models import SUPPORT, NO_STANCE, INFORMATION_ONLY, STILL_DECIDING, OPPOSE, PositionListForCandidateCampaign
+from position.models import ANY, SUPPORT, NO_STANCE, INFORMATION_ONLY, STILL_DECIDING, OPPOSE, \
+    PositionListForCandidateCampaign
 from voter.models import fetch_voter_id_from_voter_device_link
 from wevote_functions.models import convert_to_int, get_voter_device_id
 
+
+def positions_count_for_candidate_campaign_view(request, candidate_campaign_id, stance_we_are_looking_for,
+                                                show_followed_positions=True):
+    """
+    We want to return a JSON file with the support positions for a particular candidate's campaign
+    :param request:
+    :param candidate_campaign_id:
+    :return:
+    """
+    if stance_we_are_looking_for not in(ANY, SUPPORT, NO_STANCE, INFORMATION_ONLY, STILL_DECIDING, OPPOSE):
+        print stance_we_are_looking_for
+        return JsonResponse({0: "stance not recognized"})
+
+    # This implementation is built to make only two database calls. All other calculations are done here in the
+    #  application layer
+
+    position_list_manager = PositionListForCandidateCampaign()
+    all_positions_list_for_candidate_campaign = \
+        position_list_manager.retrieve_all_positions_for_candidate_campaign(
+            candidate_campaign_id, stance_we_are_looking_for)
+
+    voter_device_id = get_voter_device_id(request)
+    voter_id = fetch_voter_id_from_voter_device_link(voter_device_id)
+
+    follow_organization_list_manager = FollowOrganizationList()
+    organizations_followed_by_voter = \
+        follow_organization_list_manager.retrieve_follow_organization_info_for_voter_simple_array(voter_id)
+
+    if show_followed_positions:
+        positions_followed = position_list_manager.calculate_positions_followed_by_voter(
+            voter_id, all_positions_list_for_candidate_campaign, organizations_followed_by_voter)
+        positions_followed_count = len(positions_followed)
+        return JsonResponse({0: positions_followed_count})
+    else:
+        positions_not_followed = position_list_manager.calculate_positions_not_followed_by_voter(
+            all_positions_list_for_candidate_campaign, organizations_followed_by_voter)
+        positions_not_followed_count = len(positions_not_followed)
+        return JsonResponse({0: positions_not_followed_count})
 
 def positions_related_to_candidate_campaign_view(request, candidate_campaign_id, stance_we_are_looking_for):
     """
@@ -278,6 +317,24 @@ def display_stance_verb_we_are_looking_for_plural(stance_we_are_looking_for):
     return text_for_stance_we_are_looking_for
 
 
+def positions_count_for_candidate_campaign_any_not_followed_view(request, candidate_campaign_id):
+    show_followed_positions = False
+    return positions_count_for_candidate_campaign_any_view(
+        request, candidate_campaign_id, show_followed_positions)
+
+
+def positions_count_for_candidate_campaign_any_view(request, candidate_campaign_id, show_followed_positions=True):
+    """
+    We want to return a simple count of available positions (not already followed) for a particular candidate's campaign
+    :param request:
+    :param candidate_campaign_id:
+    :return:
+    """
+    stance_we_are_looking_for = ANY
+    return positions_count_for_candidate_campaign_view(
+        request, candidate_campaign_id, stance_we_are_looking_for, show_followed_positions)
+
+
 def positions_related_to_candidate_campaign_oppose_view(request, candidate_campaign_id):
     """
     We want to return a JSON file with the oppose positions for a particular candidate's campaign
@@ -287,6 +344,17 @@ def positions_related_to_candidate_campaign_oppose_view(request, candidate_campa
     """
     stance_we_are_looking_for = OPPOSE
     return positions_related_to_candidate_campaign_view(request, candidate_campaign_id, stance_we_are_looking_for)
+
+
+def positions_count_for_candidate_campaign_oppose_view(request, candidate_campaign_id):
+    """
+    We want to return a simple count of the oppose positions (of followed orgs) for a particular candidate's campaign
+    :param request:
+    :param candidate_campaign_id:
+    :return:
+    """
+    stance_we_are_looking_for = OPPOSE
+    return positions_count_for_candidate_campaign_view(request, candidate_campaign_id, stance_we_are_looking_for)
 
 
 def positions_related_to_candidate_campaign_information_only_view(request, candidate_campaign_id):
@@ -313,13 +381,24 @@ def positions_related_to_candidate_campaign_still_deciding_view(request, candida
 
 def positions_related_to_candidate_campaign_support_view(request, candidate_campaign_id):
     """
-    We want to return a JSON file with the oppose positions for a particular candidate's campaign
+    We want to return a JSON file with the support positions (of followed orgs) for a particular candidate's campaign
     :param request:
     :param candidate_campaign_id:
     :return:
     """
     stance_we_are_looking_for = SUPPORT
     return positions_related_to_candidate_campaign_view(request, candidate_campaign_id, stance_we_are_looking_for)
+
+
+def positions_count_for_candidate_campaign_support_view(request, candidate_campaign_id):
+    """
+    We want to return a simple count of the support positions (of followed orgs) for a particular candidate's campaign
+    :param request:
+    :param candidate_campaign_id:
+    :return:
+    """
+    stance_we_are_looking_for = SUPPORT
+    return positions_count_for_candidate_campaign_view(request, candidate_campaign_id, stance_we_are_looking_for)
 
 
 def positions_related_to_measure_campaign_oppose_view(request, measure_campaign_id):
@@ -340,6 +419,12 @@ def positions_related_to_measure_campaign_support_view(request, measure_campaign
     :return:
     """
     return JsonResponse({0: "Irvine Republican Club supports"})
+
+
+def positions_display_list_related_to_candidate_campaign_any_position_view(request, candidate_campaign_id):
+    stance_we_are_looking_for = ANY
+    return positions_display_list_related_to_candidate_campaign(
+        request, candidate_campaign_id, stance_we_are_looking_for)
 
 
 def positions_display_list_related_to_candidate_campaign_supporters_view(request, candidate_campaign_id):

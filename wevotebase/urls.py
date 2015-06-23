@@ -33,9 +33,14 @@ urlpatterns = patterns(
     # url(r'^myb/', include('ux_oak.urls', namespace="ux_oak")),
 
     # Option B: default to ballot, and get to starting page at /start
-    url(r'^$', include('ux_oak.urls', namespace="ux_oak")),
+    # url(r'^$', include('ux_oak.urls', namespace="ux_oak")),
+    # # url(r'^start/', views.start_view),
+    # url(r'^ux_oak/', include('ux_oak.urls', namespace="ux_oak_start")),
+
+    # Option C: default to ux_birch ballot, and get to starting page at /start
+    url(r'^$', include('ux_birch.urls', namespace="ux_birch")),
     # url(r'^start/', views.start_view),
-    url(r'^ux_oak/', include('ux_oak.urls', namespace="ux_oak_start")),
+    url(r'^ux_birch/', include('ux_birch.urls', namespace="ux_birch_start")),
 
     url(r'^admin/', include(admin.site.urls)),
     url(r'^import_export/', include('import_export.urls', namespace="import_export")),

@@ -10,4 +10,4 @@ def my_ballot_view(request):
     template_values = {
         'politician_list': politician_list,
     }
-    return render(request, 'ux_oak/start.html', template_values)
+    return render(request, 'ux_birch/start.html', template_values)  # Could be ux_oak too

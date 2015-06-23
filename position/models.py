@@ -12,6 +12,7 @@ from twitter.models import TwitterUser
 from voter.models import Voter
 from wevote_settings.models import fetch_next_id_we_vote_last_position_integer, fetch_site_unique_id_prefix
 
+ANY = 'ANY'  # This is a way to indicate when we want to return any stance (support, oppose, no_stance)
 SUPPORT = 'SUPPORT'
 STILL_DECIDING = 'STILL_DECIDING'
 NO_STANCE = 'NO_STANCE'
@@ -270,6 +271,9 @@ class PositionListForCandidateCampaign(models.Model):
     def retrieve_all_positions_for_candidate_campaign(self, candidate_campaign_id, stance_we_are_looking_for):
         # TODO Error check stance_we_are_looking_for
 
+        # Note that one of the incoming options for stance_we_are_looking_for is 'ANY' which means we want to return
+        #  all stances
+
         # Retrieve the support positions for this candidate_campaign_id
         organization_position_list = PositionEntered()
         organization_position_list_found = False
@@ -277,7 +281,9 @@ class PositionListForCandidateCampaign(models.Model):
             organization_position_list = PositionEntered.objects.order_by('date_entered')
             organization_position_list = organization_position_list.filter(candidate_campaign_id=candidate_campaign_id)
             # SUPPORT, STILL_DECIDING, INFORMATION_ONLY, NO_STANCE, OPPOSE
-            organization_position_list = organization_position_list.filter(stance=stance_we_are_looking_for)
+            if stance_we_are_looking_for != ANY:
+                # If we passed in the stance "ANY" it means we want to not filter down the list
+                organization_position_list = organization_position_list.filter(stance=stance_we_are_looking_for)
             # organization_position_list = organization_position_list.filter(election_id=election_id)
             if len(organization_position_list):
                 organization_position_list_found = True

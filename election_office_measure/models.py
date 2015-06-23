@@ -5,6 +5,7 @@
 from django.db import models
 from exception.models import handle_exception_silently, handle_record_found_more_than_one_exception
 from politician.models import PoliticianManager
+import re  # Reg ex
 from wevote_settings.models import fetch_next_id_we_vote_last_candidate_campaign_integer, \
     fetch_next_id_we_vote_last_contest_measure_integer, fetch_next_id_we_vote_last_contest_office_integer, \
     fetch_next_id_we_vote_last_measure_campaign_integer, fetch_site_unique_id_prefix
@@ -228,6 +229,35 @@ class CandidateCampaign(models.Model):
             self.id_maplight = None
         super(CandidateCampaign, self).save(*args, **kwargs)
 
+# 
+def mimic_google_civic_initials(name):
+    modified_name = name.replace(' A ', ' A. ')
+    modified_name = modified_name.replace(' B ', ' B. ')
+    modified_name = modified_name.replace(' C ', ' C. ')
+    modified_name = modified_name.replace(' D ', ' D. ')
+    modified_name = modified_name.replace(' E ', ' E. ')
+    modified_name = modified_name.replace(' F ', ' F. ')
+    modified_name = modified_name.replace(' G ', ' G. ')
+    modified_name = modified_name.replace(' H ', ' H. ')
+    modified_name = modified_name.replace(' I ', ' I. ')
+    modified_name = modified_name.replace(' J ', ' J. ')
+    modified_name = modified_name.replace(' K ', ' K. ')
+    modified_name = modified_name.replace(' L ', ' L. ')
+    modified_name = modified_name.replace(' M ', ' M. ')
+    modified_name = modified_name.replace(' N ', ' N. ')
+    modified_name = modified_name.replace(' O ', ' O. ')
+    modified_name = modified_name.replace(' P ', ' P. ')
+    modified_name = modified_name.replace(' Q ', ' Q. ')
+    modified_name = modified_name.replace(' R ', ' R. ')
+    modified_name = modified_name.replace(' S ', ' S. ')
+    modified_name = modified_name.replace(' T ', ' T. ')
+    modified_name = modified_name.replace(' U ', ' U. ')
+    modified_name = modified_name.replace(' V ', ' V. ')
+    modified_name = modified_name.replace(' W ', ' W. ')
+    modified_name = modified_name.replace(' X ', ' X. ')
+    modified_name = modified_name.replace(' Y ', ' Y. ')
+    modified_name = modified_name.replace(' Z ', ' Z. ')
+    return modified_name
 
 class CandidateCampaignManager(models.Model):
 
@@ -263,8 +293,30 @@ class CandidateCampaignManager(models.Model):
         id_we_vote = ''
         candidate_id_maplight = ''
         candidate_campaign_manager = CandidateCampaignManager()
-        return candidate_campaign_manager.retrieve_candidate_campaign(
+
+        results = candidate_campaign_manager.retrieve_candidate_campaign(
             candidate_campaign_id, id_we_vote, candidate_id_maplight, candidate_name)
+        if results['success']:
+            return results
+
+        # Try to modify the candidate name, and search again
+        # MapLight for example will pass in "Ronald  Gold" for example
+        candidate_name_try2 = candidate_name.replace('  ', ' ')
+        results = candidate_campaign_manager.retrieve_candidate_campaign(
+            candidate_campaign_id, id_we_vote, candidate_id_maplight, candidate_name_try2)
+        if results['success']:
+            return results
+
+        # MapLight also passes in "Kamela D Harris" for example, and Google Civic uses "Kamela D. Harris"
+        candidate_name_try3 = mimic_google_civic_initials(candidate_name)
+        if candidate_name_try3 != candidate_name:
+            results = candidate_campaign_manager.retrieve_candidate_campaign(
+                candidate_campaign_id, id_we_vote, candidate_id_maplight, candidate_name_try3)
+            if results['success']:
+                return results
+
+        # Otherwise return failed results
+        return results
 
     # NOTE: searching by all other variables seems to return a list of objects
     def retrieve_candidate_campaign(

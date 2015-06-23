@@ -2,11 +2,19 @@
 # Brought to you by We Vote. Be good.
 # -*- coding: UTF-8 -*-
 
+from datetime import datetime
 from django.db import models
 from election_office_measure.models import CandidateCampaign, ContestOffice, ContestOfficeManager
 from exception.models import handle_exception_silently, handle_record_found_more_than_one_exception, \
     handle_record_not_saved_exception
 import json
+
+def validate_maplight_date(d):
+    try:
+        datetime.strptime(d, '%Y-%m-%d')
+        return True
+    except ValueError:
+        return False
 
 # TODO Also create MapLightContestMeasure
 class MapLightContestOffice(models.Model):
@@ -200,7 +208,6 @@ MAPLIGHT_SAMPLE_CONTEST_JSON_FILE = "import_export_maplight/import_data/contest_
 
 
 def import_maplight_from_json(request):
-    print "TO BE IMPLEMENTED"
     load_from_url = False
     ballot_for_one_voter_array = []
     if load_from_url:
@@ -243,8 +250,8 @@ def import_maplight_from_json(request):
                     except Exception as e:
                         handle_exception_silently(e)
                         print "File {file_path} not found.".format(file_path=json_file_with_the_data_from_this_contest)
-                        # Don't try to process the file if it doesn't exist
-                        return
+                        # Don't try to process the file if it doesn't exist, but go to the next entry
+                        continue
     
                 import_maplight_contest_office_candidates_from_array(politicians_running_for_one_contest_array)
 
@@ -333,7 +340,8 @@ def import_maplight_contest_office_candidates_from_array(politicians_running_for
                 maplight_candidate.bio = one_politician_array['bio']
                 maplight_candidate.party = one_politician_array['party']
                 maplight_candidate.candidate_flags = one_politician_array['candidate_flags']
-                maplight_candidate.last_funding_update = one_politician_array['last_funding_update']
+                if validate_maplight_date(one_politician_array['last_funding_update']):
+                    maplight_candidate.last_funding_update = one_politician_array['last_funding_update']
                 maplight_candidate.roster_name = one_politician_array['roster_name']
                 maplight_candidate.photo = one_politician_array['photo']
                 maplight_candidate.url = one_politician_array['url']

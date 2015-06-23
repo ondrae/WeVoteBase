@@ -2,13 +2,13 @@
 
  __      _____________  ____   __________________________________
 /  \    /  \_   _____/  \   \ /   /\_____  \__    ___/\_   _____/
-\   \/\/   /|    __)_    \   Y   /  /   |   \|    |    |    __)_ 
+\   \/\/   /|    __)_    \   Y   /  /   |   \|    |    |    __)_
  \        / |        \    \     /  /    |    \    |    |        \
   \__/\  / /_______  /     \___/   \_______  /____|   /_______  /
-       \/          \/                      \/                 \/ 
+       \/          \/                      \/                 \/
 
 */
-/* support_oppose_deciding/static/site/css/style.css */
+/* ux_oak/static/site/css/oak_style.css */
 h1 { font-family: 'Open Sans', sans-serif; font-size: 24px; font-weight: bold;}
 h2 { font-family: 'Open Sans', sans-serif; font-size: 18px; font-weight: bold; text-align: center; margin-left: auto; margin-right: auto; }
 h3 {
@@ -147,7 +147,7 @@ body { font-family: 'Open Sans', sans-serif; }
 }
 
 .panel-info {
-  border: 2px solid #AAAAAA;  
+  border: 2px solid #AAAAAA;
 }
 
 .panel-body {
