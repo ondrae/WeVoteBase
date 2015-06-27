@@ -126,7 +126,7 @@ class PositionEntered(models.Model):
             next_local_integer = fetch_next_id_we_vote_last_position_integer()
             # "wv" = We Vote
             # site_unique_id_prefix = a generated (or assigned) unique id for one server running We Vote
-            # "org" = tells us this is a unique id for an org
+            # "pos" = tells us this is a unique id for an pos
             # next_integer = a unique, sequential integer for this server - not necessarily tied to database id
             self.id_we_vote = "wv{site_unique_id_prefix}pos{next_integer}".format(
                 site_unique_id_prefix=site_unique_id_prefix,
