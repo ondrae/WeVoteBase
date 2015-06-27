@@ -86,10 +86,6 @@ If you are not prompted to create a superuser, run the following command:
 python manage.py createsuperuser
 ```
 
-Run the server:
-
-    $ python manage.py runserver
-
 We also recommend installing pgAdmin3 as a WYSIWYG database administration tool.
 
 
@@ -116,9 +112,21 @@ Add the following to your local environment if you are going to connect to Googl
 export GOOGLE_CIVIC_API_KEY=<YOUR KEY HERE>
 ```
 
+Add the following new apps to the wevotebase/settings.py file, above ux_oak:
+
+    ux_birch
+
+TODO: We need to upgrade the way we deal with wevotebase/settings.py, since currently the new apps aren't getting woven back into the current settings.py file.
+Possibilities: 
+
+    http://stackoverflow.com/questions/1626326/how-to-manage-local-vs-production-settings-in-django
+    https://code.djangoproject.com/wiki/SplitSettings
+    http://www.rdegges.com/the-perfect-django-settings-file/
+
 ### Setup - Heroku Configuration
 
-We use Heroku for publishing a public version anyone can play with (see "Live Demo" above), and you can publish a public version too. Here are the instructions: https://devcenter.heroku.com/articles/getting-started-with-django
+We use Heroku for publishing a public version anyone can play with (see "Live Demo" above), and you can publish a public version too. Here are the instructions: 
+https://devcenter.heroku.com/articles/getting-started-with-django
 
 In the wevotebase/setting.py file, search for "Heroku". There are comments that tell you which parts of the settings file to comment or uncomment to get a version running on Heroku.
 
