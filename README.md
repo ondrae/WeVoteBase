@@ -27,7 +27,8 @@ Our approach is to write importers that take data from these sources into a loca
 
 ### Live Demo
 
-You can see a live demo for a San Francisco ballot here: http://my.wevoteeducation.org/
+You can see a live demo for a San Francisco ballot here: 
+http://my.wevoteeducation.org/
 
 ### Join Us - Contributing to We Vote Base
 Please reach out to us if you would like to help or have any questions: 
@@ -36,19 +37,22 @@ http://www.wevoteeducation.org/#contact-us
 To see what we are currently working on, see our Pivotal tracker:
 https://www.pivotaltracker.com/n/projects/1346856
 
-Join our Google Group here to discuss the We Vote Base application (creating a social ballot): https://groups.google.com/forum/#!forum/wevoteengineering
+Join our Google Group here to discuss the We Vote Base application (creating a social ballot): 
+https://groups.google.com/forum/#!forum/wevoteengineering
 
-You may join our Google Group here for questions about election related data (importing and exporting): https://groups.google.com/forum/#!forum/electiondata
+You may join our Google Group here for questions about election related data (importing and exporting): 
+https://groups.google.com/forum/#!forum/electiondata
 
 ### Setup - Dependencies
 
+NOTE: We are running Django version 1.7 and if you are running Django version 1.8 you will encounter problems with the current code base.
+NOTE: We are running Python version 
+
 Once you have cloned this repository to your local machine, set up a virtual environment:
 
-```bash
-cd /path_to_dev_environment/wevotebase/
-virtualenv venv
-source venv/bin/activate
-```
+    cd /path_to_dev_environment/wevotebase/
+    virtualenv venv
+    source venv/bin/activate
 
 Now that your virtualenv is running:
 
@@ -57,11 +61,47 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
+### Setup - Install the Postgres database
+
+TODO: These Postgres installation instructions need to be verified.
+
+Install Postgres: 
+
+    $ sudo port install postgresql94
+    $ sudo port install postgresql94-server
+
+Next, follow these instructions:
+
+    http://gknauth.blogspot.com/2014/01/postgresql-93-setup-after-initial.html
+
+Create the initial database:
+
+    $ python manage.py syncdb
+
+When prompted for a super user, enter your email address and a simple password. This admin account is only used in development.
+
+If you are not prompted to create a superuser, run the following command:
+
+```bash
+python manage.py createsuperuser
+```
+
+Run the server:
+
+    $ python manage.py runserver
+
+We also recommend installing pgAdmin3 as a WYSIWYG database administration tool.
+
+
 ### Setup - Local Configuration
 
 Change your local database configuration settings in (Search for "DATABASES") if you so desire:
 
 wevotebase/settings.py (Also see "Heroku Configuration" below)
+
+```bash
+createdb WeVoteDB
+```
 
 Populate your database with the latest database tables:
 
@@ -74,12 +114,6 @@ Add the following to your local environment if you are going to connect to Googl
 
 ```bash
 export GOOGLE_CIVIC_API_KEY=<YOUR KEY HERE>
-```
-
-Creating an admin user. First we’ll need to create a user who can login to the admin site. Run the following command:
-
-```bash
-python manage.py createsuperuser
 ```
 
 ### Setup - Heroku Configuration
@@ -96,13 +130,19 @@ Start up the webserver:
 python manage.py runserver
 ```
 
-Visit the site here: http://localhost:8000/ux_oak/start
+Open your browser to login to the admin account:
 
-Click on the "Import Tools" link, and import all data under Step 1. Transfer data to the We Vote tables under Step 2.
+    $ xdg-open http://localhost:8000/admin/login/?next=/admin/
 
-Please note: We are working on exporting/importing endorsement information (endorsing Organizations, as well as their Endorsements)
+Visit the site here: 
 
-Now go back to the root http://localhost:8000/ and you should be taken to a San Francisco ballot.
+    http://localhost:8000/import_export/
+
+Click all the import links, going from top to bottom.
+
+Now go back to the root and you should be taken to a San Francisco ballot.
+
+     http://localhost:8000/
 
 ### Coding Standards
 
