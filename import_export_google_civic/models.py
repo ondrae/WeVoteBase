@@ -185,14 +185,14 @@ class GoogleCivicBallotItem(models.Model):
     This is a generated table where we store the order items come in from Google Civic
     """
     # The unique id of the voter
-    voter_id = models.IntegerField(verbose_name="the voter unique id", unique=True, null=False, blank=False)
+    voter_id = models.IntegerField(verbose_name="the voter unique id", unique=False, null=False, blank=False)
     # The unique ID of this election. (Provided by Google Civic)
     google_civic_election_id = models.CharField(
-        verbose_name="google civic election id", max_length=20, null=False, unique=True)
+        verbose_name="google civic election id", max_length=20, null=False, unique=False)
     # An identifier for this district, relative to its scope. For example, the 34th State Senate district
     # would have id "34" and a scope of stateUpper.
     district_ocd_id = models.CharField(
-        verbose_name="open civic data id", max_length=254, null=False, blank=False, unique=True)
+        verbose_name="open civic data id", max_length=254, null=False, blank=False, unique=False)
     # This is the
     google_ballot_order = models.SmallIntegerField(
         verbose_name="the order this item should appear on the ballot", null=True, blank=True, unique=False)
