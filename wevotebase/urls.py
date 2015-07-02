@@ -18,13 +18,16 @@ Including another URLconf
     1. Add an import:  from blog import urls as blog_urls
     2. Add a URL to urlpatterns:  url(r'^blog/', include(blog_urls))
 """
+
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static  # Django cookbook
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns  # Django cookbook
 
+from wevotebase import startup
 from wevotebase import views
+
 
 urlpatterns = patterns(
     '',
@@ -69,3 +72,6 @@ urlpatterns = patterns(
 
 urlpatterns += staticfiles_urlpatterns()  # Django Cookbook
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)  # Django Cookbook
+
+# Execute start-up.
+startup.run()
