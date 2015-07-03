@@ -1,8 +1,11 @@
 import urllib2
 import logging
 import json
+import wevote_functions.admin
 
-logger = logging.getLogger()
+
+logger = wevote_functions.admin.get_logger(__name__)
+
 
 class FacebookAPI(object):
     """API to Facebook's opengraph."""

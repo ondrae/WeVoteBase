@@ -6,7 +6,11 @@ from django.db import models
 from exception.models import handle_exception, handle_exception_silently, handle_record_found_more_than_one_exception,\
     handle_record_not_found_exception, handle_record_not_saved_exception
 import string
+import wevote_functions.admin
 from wevote_functions.models import convert_to_int, generate_random_string
+
+
+logger = wevote_functions.admin.get_logger(__name__)
 
 
 class WeVoteSetting(models.Model):
@@ -48,10 +52,9 @@ class WeVoteSettingsManager(models.Model):
                 elif we_vote_setting.value_type == WeVoteSetting.STRING:
                     return we_vote_setting.string_value
         except WeVoteSetting.MultipleObjectsReturned as e:
-            handle_record_found_more_than_one_exception(e)
+            handle_record_found_more_than_one_exception(e, logger=logger)
             return ''
         except WeVoteSetting.DoesNotExist as e:
-            handle_exception_silently(e)
             return ''
 
         return ''
@@ -67,7 +70,7 @@ class WeVoteSettingsManager(models.Model):
             elif type(setting_value).__name__ == 'str':
                 value_type = WeVoteSetting.STRING
             elif type(setting_value).__name__ == 'list':
-                print "setting is a list. To be developed"
+                logger.info("setting is a list. To be developed")
                 value_type = WeVoteSetting.STRING
             else:
                 value_type = WeVoteSetting.STRING
@@ -84,9 +87,8 @@ class WeVoteSettingsManager(models.Model):
             we_vote_setting = WeVoteSetting.objects.get(name=setting_name)
             we_vote_setting_exists = True
         except WeVoteSetting.MultipleObjectsReturned as e:
-            handle_record_found_more_than_one_exception(e)
+            handle_record_found_more_than_one_exception(e, logger=logger)
         except WeVoteSetting.DoesNotExist as e:
-            handle_exception_silently(e)
             we_vote_setting_does_not_exist = True
 
         we_vote_setting_manager = WeVoteSettingsManager()
@@ -99,7 +101,7 @@ class WeVoteSettingsManager(models.Model):
                 we_vote_setting.save()
                 we_vote_setting_id = we_vote_setting.id
             except Exception as e:
-                handle_record_not_saved_exception(e)
+                handle_record_not_saved_exception(e, logger=logger)
         elif we_vote_setting_does_not_exist:
             try:
                 # Create new
@@ -112,7 +114,7 @@ class WeVoteSettingsManager(models.Model):
                 we_vote_setting.save()
                 we_vote_setting_id = we_vote_setting.id
             except Exception as e:
-                handle_record_not_saved_exception(e)
+                handle_record_not_saved_exception(e, logger=logger)
 
         results = {
             'success':                  True if we_vote_setting_id else False,

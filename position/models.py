@@ -10,7 +10,9 @@ from exception.models import handle_exception, handle_exception_silently, handle
 from organization.models import Organization
 from twitter.models import TwitterUser
 from voter.models import Voter
+import wevote_functions.admin
 from wevote_settings.models import fetch_next_id_we_vote_last_position_integer, fetch_site_unique_id_prefix
+
 
 ANY = 'ANY'  # This is a way to indicate when we want to return any stance (support, oppose, no_stance)
 SUPPORT = 'SUPPORT'
@@ -27,6 +29,8 @@ POSITION_CHOICES = (
     (OPPOSE,            'Opposes'),
     # ('OPPOSE_STRONG',     'Strongly Opposes'),  # I do not believe we will be offering 'OPPOSE_STRONG' as an option
 )
+
+logger = wevote_functions.admin.get_logger(__name__)
 
 
 class PositionEntered(models.Model):
@@ -163,26 +167,24 @@ class PositionEntered(models.Model):
         try:
             candidate_campaign = CandidateCampaign.objects.get(id=self.candidate_campaign_id)
         except CandidateCampaign.MultipleObjectsReturned as e:
-            handle_record_found_more_than_one_exception(e)
-            print "position.candidate_campaign Found multiple"
-            return None
+            handle_record_found_more_than_one_exception(e, logger=logger)
+            logger.error("position.candidate_campaign Found multiple")
+            return
         except CandidateCampaign.DoesNotExist as e:
-            handle_exception_silently(e)
-            print "position.candidate_campaign did not find"
-            return None
+            logger.error("position.candidate_campaign did not find")
+            return
         return candidate_campaign
 
     def organization(self):
         try:
             organization = Organization.objects.get(id=self.organization_id)
         except Organization.MultipleObjectsReturned as e:
-            handle_record_found_more_than_one_exception(e)
-            print "position.candidate_campaign Found multiple"
-            return None
+            handle_record_found_more_than_one_exception(e, logger=logger)
+            logger.error("position.candidate_campaign Found multiple")
+            return
         except Organization.DoesNotExist as e:
-            handle_exception_silently(e)
-            print "position.candidate_campaign did not find"
-            return None
+            logger.error("position.candidate_campaign did not find")
+            return
         return organization
 
     def organization_id_we_vote(self):
@@ -191,7 +193,7 @@ class PositionEntered(models.Model):
             if organization_on_stage.id_we_vote:
                 return organization_on_stage.id_we_vote
         except Exception as e:
-            handle_exception_silently(e)
+            pass
         return ''
 
     def candidate_campaign_id_we_vote(self):
@@ -200,7 +202,7 @@ class PositionEntered(models.Model):
             if candidate_campaign_on_stage.id_we_vote:
                 return candidate_campaign_on_stage.id_we_vote
         except Exception as e:
-            handle_exception_silently(e)
+            pass
         return ''
 
     def measure_campaign_id_we_vote(self):
@@ -209,7 +211,7 @@ class PositionEntered(models.Model):
             if measure_campaign_on_stage.id_we_vote:
                 return measure_campaign_on_stage.id_we_vote
         except Exception as e:
-            handle_exception_silently(e)
+            pass
         return ''
 
 
@@ -288,7 +290,7 @@ class PositionListForCandidateCampaign(models.Model):
             if len(organization_position_list):
                 organization_position_list_found = True
         except Exception as e:
-            handle_record_not_found_exception(e)
+            handle_record_not_found_exception(e, logger=logger)
 
         if organization_position_list_found:
             return organization_position_list
@@ -312,8 +314,9 @@ class PositionListForCandidateCampaign(models.Model):
                 positions_followed_by_voter.append(position)
             # TODO Include a check against a list of "people_followed_by_voter" so we can include friends
             elif position.organization_id in organizations_followed_by_voter:
-                # print "position {position_id} followed by voter (org {org_id})".format(
-                #     position_id=position.id, org_id=position.organization_id)
+                logger.debug("position {position_id} followed by voter (org {org_id})".format(
+                    position_id=position.id, org_id=position.organization_id
+                ))
                 positions_followed_by_voter.append(position)
 
         return positions_followed_by_voter
@@ -332,8 +335,9 @@ class PositionListForCandidateCampaign(models.Model):
             # Some positions are for individual voters, so we want to filter those out
             if position.organization_id \
                     and position.organization_id not in organizations_followed_by_voter:
-                # print "position {position_id} NOT followed by voter (org {org_id})".format(
-                #     position_id=position.id, org_id=position.organization_id)
+                logger.debug("position {position_id} NOT followed by voter (org {org_id})".format(
+                    position_id=position.id, org_id=position.organization_id
+                ))
                 positions_not_followed_by_voter.append(position)
 
         return positions_not_followed_by_voter
@@ -403,11 +407,10 @@ class PositionEnteredManager(models.Model):
                     voter_id=voter_id, measure_campaign_id=measure_campaign_id)
                 position_id = position_on_stage.id
         except PositionEntered.MultipleObjectsReturned as e:
-            handle_record_found_more_than_one_exception(e)
+            handle_record_found_more_than_one_exception(e, logger=logger)
             error_result = True
             exception_multiple_object_returned = True
         except PositionEntered.DoesNotExist as e:
-            handle_exception_silently(e)
             error_result = True
             exception_does_not_exist = True
 
@@ -468,10 +471,10 @@ class PositionEnteredManager(models.Model):
                 position_id = voter_position_on_stage.id
                 voter_position_on_stage_found = True
             except Exception as e:
-                handle_record_not_saved_exception(e)
+                handle_record_not_saved_exception(e, logger=logger)
 
         elif results['MultipleObjectsReturned']:
-            print "delete all but one and take it over?"
+            logger.warn("delete all but one and take it over?")
         elif results['DoesNotExist']:
             try:
                 # Create new
@@ -485,7 +488,7 @@ class PositionEnteredManager(models.Model):
                 position_id = voter_position_on_stage.id
                 voter_position_on_stage_found = True
             except Exception as e:
-                handle_record_not_saved_exception(e)
+                handle_record_not_saved_exception(e, logger=logger)
 
         results = {
             'success':                  True if voter_position_on_stage_found else False,

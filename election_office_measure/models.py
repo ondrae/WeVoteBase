@@ -9,6 +9,10 @@ import re  # Reg ex
 from wevote_settings.models import fetch_next_id_we_vote_last_candidate_campaign_integer, \
     fetch_next_id_we_vote_last_contest_measure_integer, fetch_next_id_we_vote_last_contest_office_integer, \
     fetch_next_id_we_vote_last_measure_campaign_integer, fetch_site_unique_id_prefix
+import wevote_functions.admin
+
+
+logger = wevote_functions.admin.get_logger(__name__)
 
 
 class Election(models.Model):
@@ -229,7 +233,7 @@ class CandidateCampaign(models.Model):
             self.id_maplight = None
         super(CandidateCampaign, self).save(*args, **kwargs)
 
-# 
+#
 def mimic_google_civic_initials(name):
     modified_name = name.replace(' A ', ' A. ')
     modified_name = modified_name.replace(' B ', ' B. ')
@@ -539,4 +543,3 @@ class BallotItemManager(models.Model):
 
         # Retrieve all of the measure_contests in each of those jurisdictions
         return True
-

@@ -7,6 +7,10 @@ from django.db import models
 from exception.models import handle_exception, handle_exception_silently, handle_record_found_more_than_one_exception,\
     handle_record_not_found_exception, handle_record_not_saved_exception
 from tag.models import Tag
+import wevote_functions.admin
+
+
+logger = wevote_functions.admin.get_logger(__name__)
 
 
 class Politician(models.Model):
@@ -145,11 +149,10 @@ class PoliticianManager(models.Model):
             #     politician_on_stage = Politician.objects.get(id_we_vote=id_we_vote)
             #     politician_on_stage_id = politician_on_stage.id
         except Politician.MultipleObjectsReturned as e:
-            handle_record_found_more_than_one_exception(e)
+            handle_record_found_more_than_one_exception(e, logger=logger)
             error_result = True
             exception_multiple_object_returned = True
         except Politician.DoesNotExist as e:
-            handle_exception_silently(e)
             error_result = True
             exception_does_not_exist = True
 
