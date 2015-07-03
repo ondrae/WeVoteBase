@@ -9,7 +9,12 @@ from exception.models import handle_exception_silently, handle_record_found_more
 import os  # Needed to get GOOGLE_CIVIC_API_KEY from an environment variable
 import json
 import requests
+import wevote_functions.admin
 from wevote_functions.models import value_exists
+
+
+logger = wevote_functions.admin.get_logger(__name__)
+
 
 # Set your environment variable with: export GOOGLE_CIVIC_API_KEY=<API KEY HERE>
 if 'GOOGLE_CIVIC_API_KEY' in os.environ:
@@ -266,7 +271,7 @@ def import_voterinfo_from_json(save_to_db):
     load_from_google_servers = False
     if load_from_google_servers:
         # Request json file from Google servers
-        print "Loading from Google servers"
+        logger.info("Loading from Google servers")
         request = requests.get(VOTER_INFO_URL, params={
             "key": GOOGLE_CIVIC_API_KEY,  # This comes from an environment variable
             "address": "254 Hartford Street San Francisco CA",
@@ -275,7 +280,7 @@ def import_voterinfo_from_json(save_to_db):
         structured_json = json.loads(request.text)
     else:
         # Load saved json from local file
-        print "Loading from local file"
+        logger.info("Loading from local file")
 
         with open(VOTER_INFO_JSON_FILE) as json_data:
             structured_json = json.load(json_data)

@@ -2,7 +2,12 @@
 # Brought to you by We Vote. Be good.
 # -*- coding: UTF-8 -*-
 
+import wevote_functions.admin
+
 from django.db import models
+
+
+logger = wevote_functions.admin.get_logger(__name__)
 
 
 # CiceroElectionEvent
@@ -263,4 +268,3 @@ from django.db import models
 # url = None  # Goverment's web address
 # notes = None  # Notes about the Government.
 # last_update_user = None  # Identifier for the last user that updated this record. This property is not included in the API response.
-
