@@ -94,7 +94,7 @@ def transfer_theunitedstatesio_cached_data_to_wevote_tables():
                 try:
                     full_name_assembled_guess = \
                         legislator_current_entry.first_name+" "+legislator_current_entry.last_name
-                    logger.info("Searching for existing full_name_google_civic: {full_name_assembled}".format(
+                    logger.info(u"Searching for existing full_name_google_civic: {full_name_assembled}".format(
                         full_name_assembled=full_name_assembled_guess
                     ))
                     query1 = Politician.objects.all()
@@ -272,7 +272,7 @@ def google_civic_link_politician_to_campaign():
     for google_civic_candidate_campaign_entry in google_civic_candidate_campaign_query:
 
         if not google_civic_candidate_campaign_entry.google_civic_election_id:
-            logger.error("We cannot proceed with {name} -- there is no google_civic_election_id".format(
+            logger.error(u"We cannot proceed with {name} -- there is no google_civic_election_id".format(
                 name=google_civic_candidate_campaign_entry.name
             ))
             continue
@@ -426,7 +426,7 @@ def google_civic_get_or_create_contest_office(google_civic_candidate_campaign_en
             # TODO Update contest_office information here
         elif len(contest_office_query) > 1:
             # We have bad data - a duplicate
-            logger.error("We have bad data, a duplicate ContestOffice entry: {office}".format(
+            logger.error(u"We have bad data, a duplicate ContestOffice entry: {office}".format(
                 office=google_civic_contest_office_on_stage.office
             ))
             return {
@@ -588,7 +588,7 @@ def google_civic_get_or_create_politician(google_civic_candidate_campaign_entry)
                 # We have confusion, so skip processing this google_civic_candidate_campaign_entry
                 logger.warn("More than one Politician found (query1)")
         else:
-            logger.warn("No politician found based on full_name_google_civic: {name}".format(
+            logger.warn(u"No politician found based on full_name_google_civic: {name}".format(
                 name=google_civic_candidate_campaign_entry.name
             ))
     except Exception as e:
@@ -598,7 +598,7 @@ def google_civic_get_or_create_politician(google_civic_candidate_campaign_entry)
         # No entries were found, so we need to
         # a) Search more deeply
         # Searching based on full_name_assembled
-        logger.info("Searching against full_name_assembled: {name}".format(
+        logger.info(u"Searching against full_name_assembled: {name}".format(
             name=google_civic_candidate_campaign_entry.name
         ))
         # TODO DALE 2015-05-02 With this code, if we had imported a "Betty T. Yee" from another non-google-civic
@@ -612,7 +612,7 @@ def google_civic_get_or_create_politician(google_civic_candidate_campaign_entry)
                 politician_on_stage = politician_query_full_name_assembled[0]
                 politician_on_stage_found = True
             else:
-                logger.warn("No politician found based on full_name_assembled: {name}".format(
+                logger.warn(u"No politician found based on full_name_assembled: {name}".format(
                     name=google_civic_candidate_campaign_entry.name
                 ))
         except Exception as e:
@@ -621,7 +621,7 @@ def google_civic_get_or_create_politician(google_civic_candidate_campaign_entry)
     if not politician_on_stage_found:
         # No entries were found, so we need to
         # a) Search more deeply
-        logger.info("first_name_guess: {first_name_guess}, last_name_guess: {last_name_guess}".format(
+        logger.info(u"first_name_guess: {first_name_guess}, last_name_guess: {last_name_guess}".format(
             first_name_guess=first_name_guess,
             last_name_guess=last_name_guess
         ))
@@ -713,7 +713,7 @@ def import_we_vote_organizations_from_json(request, load_from_uri=False):
 
     for one_organization in structured_json:
         logger.debug(
-            "id_we_vote: {id_we_vote}, name: {name}, url: {url}".format(**one_organization)
+            u"id_we_vote: {id_we_vote}, name: {name}, url: {url}".format(**one_organization)
         )
         # Make sure we have the minimum required variables
         if len(one_organization["id_we_vote"]) == 0 or len(one_organization["name"]) == 0:
@@ -742,7 +742,7 @@ def import_we_vote_organizations_from_json(request, load_from_uri=False):
                 organization_on_stage.name = one_organization["name"]
                 organization_on_stage.url = one_organization["url"]
                 organization_on_stage.save()
-                messages.add_message(request, messages.INFO, "Organization updated: {name}".format(
+                messages.add_message(request, messages.INFO, u"Organization updated: {name}".format(
                     name=one_organization["name"]))
             else:
                 # Create new
@@ -752,13 +752,13 @@ def import_we_vote_organizations_from_json(request, load_from_uri=False):
                     url=one_organization["url"],
                 )
                 organization_on_stage.save()
-                messages.add_message(request, messages.INFO, "New organization imported: {name}".format(
+                messages.add_message(request, messages.INFO, u"New organization imported: {name}".format(
                     name=one_organization["name"]))
         except Exception as e:
             handle_record_not_saved_exception(e, logger=logger)
             messages.add_message(
                 request, messages.ERROR,
-                "Could not save Organization, id_we_vote: {id_we_vote}, name: {name}, url: {url}".format(
+                u"Could not save Organization, id_we_vote: {id_we_vote}, name: {name}, url: {url}".format(
                     id_we_vote=one_organization["id_we_vote"],
                     name=one_organization["name"],
                     url=one_organization["url"],))
@@ -801,16 +801,16 @@ def import_we_vote_candidate_campaigns_from_json(request, load_from_uri=False):
                 # Update
                 candidate_campaign_on_stage.id_we_vote = one_candidate_campaign["id_we_vote"]
                 candidate_campaign_on_stage.save()
-                messages.add_message(request, messages.INFO, "CandidateCampaign updated: {candidate_name}".format(
+                messages.add_message(request, messages.INFO, u"CandidateCampaign updated: {candidate_name}".format(
                     candidate_name=one_candidate_campaign["candidate_name"]))
             else:
-                messages.add_message(request, messages.ERROR, "CandidateCampaign not found: {candidate_name}".format(
+                messages.add_message(request, messages.ERROR, u"CandidateCampaign not found: {candidate_name}".format(
                     candidate_name=one_candidate_campaign["candidate_name"]))
         except Exception as e:
             handle_record_not_saved_exception(e, logger=logger)
             messages.add_message(request, messages.ERROR,
-                                 "Could not save CandidateCampaign, id_we_vote: {id_we_vote}, "
-                                 "candidate_name: {candidate_name}, ".format(
+                                 u"Could not save CandidateCampaign, id_we_vote: {id_we_vote}, "
+                                 u"candidate_name: {candidate_name}, ".format(
                                      id_we_vote=one_candidate_campaign["id_we_vote"],
                                      candidate_name=one_candidate_campaign["candidate_name"],))
 
@@ -880,7 +880,7 @@ def import_we_vote_positions_from_json(request, load_from_uri=False):
                 position_on_stage.statement_text = one_position["statement_text"]
                 position_on_stage.statement_html = one_position["statement_html"]
                 position_on_stage.save()
-                messages.add_message(request, messages.INFO, "Position updated: {id_we_vote}".format(
+                messages.add_message(request, messages.INFO, u"Position updated: {id_we_vote}".format(
                     id_we_vote=one_position["id_we_vote"]))
             else:
                 # Create new
@@ -897,14 +897,14 @@ def import_we_vote_positions_from_json(request, load_from_uri=False):
                     statement_html=one_position["statement_html"],
                 )
                 position_on_stage.save()
-                messages.add_message(request, messages.INFO, "New position imported: {id_we_vote}".format(
+                messages.add_message(request, messages.INFO, u"New position imported: {id_we_vote}".format(
                     id_we_vote=one_position["id_we_vote"]))
         except Exception as e:
             handle_record_not_saved_exception(e, logger=logger)
             messages.add_message(request, messages.ERROR,
-                                 "Could not save position, id_we_vote: {id_we_vote}, "
-                                 "organization_id_we_vote: {organization_id_we_vote}, "
-                                 "candidate_campaign_id_we_vote: {candidate_campaign_id_we_vote}".format(
+                                 u"Could not save position, id_we_vote: {id_we_vote}, "
+                                 u"organization_id_we_vote: {organization_id_we_vote}, "
+                                 u"candidate_campaign_id_we_vote: {candidate_campaign_id_we_vote}".format(
                                      id_we_vote=one_position["id_we_vote"],
                                      organization_id_we_vote=one_position["organization_id_we_vote"],
                                      candidate_campaign_id_we_vote=one_position["candidate_campaign_id_we_vote"],
