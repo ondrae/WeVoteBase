@@ -145,9 +145,9 @@ def import_we_vote_sample_positions_data_from_json(request):
     #  sync to the same We Vote ID. This is critical so we can link Positions to Organization & Candidate Campaign.
     # At this point (June 2015) we assume the politicians have been imported from Google Civic. We aren't assigning
     # the politicians a We Vote id, but instead use their full name as the identifier
-#    import_we_vote_candidate_campaigns_from_json(request, False)
+    import_we_vote_candidate_campaigns_from_json(request, False)
 
-#    import_we_vote_positions_from_json(request, False)
+    import_we_vote_positions_from_json(request, False)
 
     messages.add_message(request, messages.INFO, 'Positions imported.')
 
