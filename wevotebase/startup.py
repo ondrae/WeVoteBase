@@ -1,5 +1,5 @@
-"""This should include methods that contain tasks that should be executed when first
-starting the application.
+"""This should include methods that contain tasks that should be executed when
+accessing the application.
 """
 
 import wevote_functions.admin
