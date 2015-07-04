@@ -9,8 +9,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
 from election_office_measure.models import CandidateCampaign, CandidateCampaignManager, ContestMeasure, ContestOffice, \
     MeasureCampaign
-from exception.models import handle_exception, handle_exception_silently, handle_record_not_found_exception, \
-    handle_record_not_saved_exception
+from exception.models import handle_exception, handle_record_not_found_exception, handle_record_not_saved_exception
 from import_export.models import transfer_google_civic_voterinfo_cached_data_to_wevote_tables, \
     transfer_theunitedstatesio_cached_data_to_wevote_tables, import_we_vote_organizations_from_json, \
     import_we_vote_candidate_campaigns_from_json, import_we_vote_positions_from_json
@@ -22,7 +21,11 @@ from position.models import PositionEntered
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+import wevote_functions.admin
 from wevote_functions.models import value_exists
+
+
+logger = wevote_functions.admin.get_logger(__name__)
 
 
 # http://localhost:8000/import_export/
@@ -181,20 +184,23 @@ def transfer_maplight_data_to_we_vote_tables(request):
             one_candidate_from_maplight_table.candidate_id)
 
         if not results['success']:
-            print "Candidate NOT found by MapLight id: {name}".format(
-                name=one_candidate_from_maplight_table.candidate_id)
+            logger.warn(u"Candidate NOT found by MapLight id: {name}".format(
+                name=one_candidate_from_maplight_table.candidate_id
+            ))
             results = candidate_campaign_manager.retrieve_candidate_campaign_from_candidate_name(
                 one_candidate_from_maplight_table.display_name)
 
             if not results['success']:
-                print "Candidate NOT found by display_name: {name}".format(
-                    name=one_candidate_from_maplight_table.display_name)
+                logger.warn(u"Candidate NOT found by display_name: {name}".format(
+                    name=one_candidate_from_maplight_table.display_name
+                ))
                 results = candidate_campaign_manager.retrieve_candidate_campaign_from_candidate_name(
                     one_candidate_from_maplight_table.original_name)
 
                 if not results['success']:
-                    print "Candidate NOT found by original_name: {name}".format(
-                        name=one_candidate_from_maplight_table.original_name)
+                    logger.warn(u"Candidate NOT found by original_name: {name}".format(
+                        name=one_candidate_from_maplight_table.original_name
+                    ))
 
                     one_mapping_google_civic_name = ''
                     for one_mapping_found in politician_name_mapping_list:
@@ -206,8 +212,9 @@ def transfer_maplight_data_to_we_vote_tables(request):
                         results = candidate_campaign_manager.retrieve_candidate_campaign_from_candidate_name(
                             one_mapping_google_civic_name)
                     if not results['success'] or not value_exists(one_mapping_google_civic_name):
-                        print "Candidate NOT found by mapping to google_civic name: {name}".format(
-                            name=one_mapping_google_civic_name)
+                        logger.warn(u"Candidate NOT found by mapping to google_civic name: {name}".format(
+                            name=one_mapping_google_civic_name
+                        ))
 
                         continue  # Go to the next candidate
 
@@ -217,7 +224,9 @@ def transfer_maplight_data_to_we_vote_tables(request):
         if not value_exists(candidate_campaign_on_stage.candidate_name):
             continue
 
-        # print "Candidate {name} found".format(name=candidate_campaign_on_stage.candidate_name)
+        logger.debug(u"Candidate {name} found".format(
+            name=candidate_campaign_on_stage.candidate_name
+        ))
 
         try:
             # Tie the maplight id to our record
@@ -230,7 +239,7 @@ def transfer_maplight_data_to_we_vote_tables(request):
             # We can bring over other data as needed, like gender for example
             candidate_campaign_on_stage.save()
         except Exception as e:
-            handle_record_not_saved_exception(e)
+            handle_record_not_saved_exception(e, logger=logger)
 
     messages.add_message(request, messages.INFO, 'MapLight data woven into We Vote tables.')
 

@@ -5,11 +5,17 @@
 from django.http import JsonResponse
 from position.models import PositionEnteredManager
 from voter.models import fetch_voter_id_from_voter_device_link
+import wevote_functions.admin
 from wevote_functions.models import get_voter_device_id
 
+
+logger = wevote_functions.admin.get_logger(__name__)
+
+
 def voter_supporting_candidate_campaign_view(request, candidate_campaign_id):
-    # print "voter_supporting_candidate_campaign_view {candidate_campaign_id}".format(
-    #     candidate_campaign_id=candidate_campaign_id)
+    logger.debug("voter_supporting_candidate_campaign_view {candidate_campaign_id}".format(
+        candidate_campaign_id=candidate_campaign_id
+    ))
     voter_device_id = get_voter_device_id(request)
     voter_id = fetch_voter_id_from_voter_device_link(voter_device_id)
 
@@ -22,8 +28,9 @@ def voter_supporting_candidate_campaign_view(request, candidate_campaign_id):
 
 
 def voter_stop_supporting_candidate_campaign_view(request, candidate_campaign_id):
-    # print "voter_stop_supporting_candidate_campaign_view {candidate_campaign_id}".format(
-    #     candidate_campaign_id=candidate_campaign_id)
+    logger.debug("voter_stop_supporting_candidate_campaign_view {candidate_campaign_id}".format(
+        candidate_campaign_id=candidate_campaign_id
+    ))
     voter_device_id = get_voter_device_id(request)
     voter_id = fetch_voter_id_from_voter_device_link(voter_device_id)
 
@@ -36,8 +43,9 @@ def voter_stop_supporting_candidate_campaign_view(request, candidate_campaign_id
 
 
 def voter_opposing_candidate_campaign_view(request, candidate_campaign_id):
-    # print "voter_opposing_candidate_campaign_view {candidate_campaign_id}".format(
-    #     candidate_campaign_id=candidate_campaign_id)
+    logger.debug("voter_opposing_candidate_campaign_view {candidate_campaign_id}".format(
+        candidate_campaign_id=candidate_campaign_id
+    ))
     voter_device_id = get_voter_device_id(request)
     voter_id = fetch_voter_id_from_voter_device_link(voter_device_id)
 
@@ -50,8 +58,9 @@ def voter_opposing_candidate_campaign_view(request, candidate_campaign_id):
 
 
 def voter_stop_opposing_candidate_campaign_view(request, candidate_campaign_id):
-    # print "voter_stop_opposing_candidate_campaign_view {candidate_campaign_id}".format(
-    #     candidate_campaign_id=candidate_campaign_id)
+    logger.debug("voter_stop_opposing_candidate_campaign_view {candidate_campaign_id}".format(
+        candidate_campaign_id=candidate_campaign_id
+    ))
     voter_device_id = get_voter_device_id(request)
     voter_id = fetch_voter_id_from_voter_device_link(voter_device_id)
 
@@ -64,8 +73,9 @@ def voter_stop_opposing_candidate_campaign_view(request, candidate_campaign_id):
 
 
 def voter_asking_candidate_campaign_view(request, candidate_campaign_id):
-    print "voter_asking_candidate_campaign_view {candidate_campaign_id}".format(
-        candidate_campaign_id=candidate_campaign_id)
+    logger.debug("voter_asking_candidate_campaign_view {candidate_campaign_id}".format(
+        candidate_campaign_id=candidate_campaign_id
+    ))
     voter_device_id = get_voter_device_id(request)
     voter_id = fetch_voter_id_from_voter_device_link(voter_device_id)
 
@@ -73,8 +83,9 @@ def voter_asking_candidate_campaign_view(request, candidate_campaign_id):
 
 
 def voter_stop_asking_candidate_campaign_view(request, candidate_campaign_id):
-    print "voter_stop_asking_candidate_campaign_view {candidate_campaign_id}".format(
-        candidate_campaign_id=candidate_campaign_id)
+    logger.debug("voter_stop_asking_candidate_campaign_view {candidate_campaign_id}".format(
+        candidate_campaign_id=candidate_campaign_id
+    ))
     voter_device_id = get_voter_device_id(request)
     voter_id = fetch_voter_id_from_voter_device_link(voter_device_id)
 
@@ -82,8 +93,9 @@ def voter_stop_asking_candidate_campaign_view(request, candidate_campaign_id):
 
 
 def voter_stance_for_candidate_campaign_view(request, candidate_campaign_id):
-    # print "voter_stance_for_candidate_campaign_view {candidate_campaign_id}".format(
-    #     candidate_campaign_id=candidate_campaign_id)
+    logger.debug("voter_stance_for_candidate_campaign_view {candidate_campaign_id}".format(
+        candidate_campaign_id=candidate_campaign_id
+    ))
     voter_device_id = get_voter_device_id(request)
     voter_id = fetch_voter_id_from_voter_device_link(voter_device_id)
 
@@ -104,8 +116,9 @@ def voter_stance_for_candidate_campaign_view(request, candidate_campaign_id):
 
 
 def voter_stance_for_measure_campaign_view(request, measure_campaign_id):
-    print "voter_stance_for_candidate_campaign_view {candidate_campaign_id}".format(
-        measure_campaign_id=measure_campaign_id)
+    logger.debug("voter_stance_for_candidate_campaign_view {candidate_campaign_id}".format(
+        measure_campaign_id=measure_campaign_id
+    ))
     voter_device_id = get_voter_device_id(request)
     voter_id = fetch_voter_id_from_voter_device_link(voter_device_id)
 

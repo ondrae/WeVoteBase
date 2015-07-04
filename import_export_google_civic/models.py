@@ -4,12 +4,17 @@
 # -*- coding: UTF-8 -*-
 
 from django.db import models
-from exception.models import handle_exception_silently, handle_record_found_more_than_one_exception, \
+from exception.models import handle_record_found_more_than_one_exception, \
     handle_record_not_found_exception
 import os  # Needed to get GOOGLE_CIVIC_API_KEY from an environment variable
 import json
 import requests
+import wevote_functions.admin
 from wevote_functions.models import value_exists
+
+
+logger = wevote_functions.admin.get_logger(__name__)
+
 
 # Set your environment variable with: export GOOGLE_CIVIC_API_KEY=<API KEY HERE>
 if 'GOOGLE_CIVIC_API_KEY' in os.environ:
@@ -185,14 +190,14 @@ class GoogleCivicBallotItem(models.Model):
     This is a generated table where we store the order items come in from Google Civic
     """
     # The unique id of the voter
-    voter_id = models.IntegerField(verbose_name="the voter unique id", unique=True, null=False, blank=False)
+    voter_id = models.IntegerField(verbose_name="the voter unique id", unique=False, null=False, blank=False)
     # The unique ID of this election. (Provided by Google Civic)
     google_civic_election_id = models.CharField(
-        verbose_name="google civic election id", max_length=20, null=False, unique=True)
+        verbose_name="google civic election id", max_length=20, null=False, unique=False)
     # An identifier for this district, relative to its scope. For example, the 34th State Senate district
     # would have id "34" and a scope of stateUpper.
     district_ocd_id = models.CharField(
-        verbose_name="open civic data id", max_length=254, null=False, blank=False, unique=True)
+        verbose_name="open civic data id", max_length=254, null=False, blank=False, unique=False)
     # This is the
     google_ballot_order = models.SmallIntegerField(
         verbose_name="the order this item should appear on the ballot", null=True, blank=True, unique=False)
@@ -215,7 +220,7 @@ class GoogleCivicBallotItemManager(models.Model):
                                                              ballot_order=local_ballot_order,)
             google_civic_ballot_item.save()
         except GoogleCivicBallotItem.DoesNotExist as e:
-            handle_exception_silently(e)
+            pass
 
     def retrieve_ballot_item_for_voter(self, voter_id, google_civic_election_id, google_civic_district_ocd_id):
         error_result = False
@@ -233,10 +238,9 @@ class GoogleCivicBallotItemManager(models.Model):
                 )
                 google_civic_ballot_item_id = google_civic_ballot_item_on_stage.id
             except GoogleCivicBallotItem.MultipleObjectsReturned as e:
-                handle_record_found_more_than_one_exception(e)
+                handle_record_found_more_than_one_exception(e, logger=logger)
                 exception_multiple_object_returned = True
             except GoogleCivicBallotItem.DoesNotExist as e:
-                handle_exception_silently(e)
                 exception_does_not_exist = True
 
         results = {
@@ -266,7 +270,7 @@ def import_voterinfo_from_json(save_to_db):
     load_from_google_servers = False
     if load_from_google_servers:
         # Request json file from Google servers
-        print "Loading from Google servers"
+        logger.info("Loading from Google servers")
         request = requests.get(VOTER_INFO_URL, params={
             "key": GOOGLE_CIVIC_API_KEY,  # This comes from an environment variable
             "address": "254 Hartford Street San Francisco CA",
@@ -275,7 +279,7 @@ def import_voterinfo_from_json(save_to_db):
         structured_json = json.loads(request.text)
     else:
         # Load saved json from local file
-        print "Loading from local file"
+        logger.info("Loading from local file")
 
         with open(VOTER_INFO_JSON_FILE) as json_data:
             structured_json = json.load(json_data)
@@ -350,7 +354,7 @@ def process_election_from_structured_json(election_structured_data, save_to_db):
                                                              )
                 # Return the google_civic_election_id so we can tie all of the Offices and Measures to this election
             except Exception as e:
-                handle_record_not_found_exception(e)
+                handle_record_not_found_exception(e, logger=logger)
 
     return google_civic_election_id
 
@@ -399,7 +403,7 @@ def process_contest_office_from_structured_json(
         one_contest_office_structured_json, google_civic_election_id, local_ballot_order, save_to_db):
     voter_id = 1  # TODO Temp
 
-    # print "General contest_type"
+    logger.debug("General contest_type")
     office = one_contest_office_structured_json['office']
 
     # The number of candidates that a voter may vote for in this contest.
@@ -517,7 +521,7 @@ def process_contest_office_from_structured_json(
                 # The internal id is needed since there isn't a ContestOffice google identifier
                 internal_contest_office_id = google_civic_contest_office.id
             except Exception as e:
-                handle_record_not_found_exception(e)
+                handle_record_not_found_exception(e, logger=logger)
 
         if value_exists(voter_id) and value_exists(google_civic_election_id) and value_exists(district_ocd_id):
             google_civic_ballot_item_manager = GoogleCivicBallotItemManager()
@@ -612,7 +616,7 @@ def process_candidates_from_structured_json(
                                 youtube_url=youtube_url,
                                 )
                 except Exception as e:
-                    handle_record_not_found_exception(e)
+                    handle_record_not_found_exception(e, logger=logger)
 
     return
 
@@ -625,7 +629,7 @@ def process_contest_referendum_from_structured_json(
     "referendumUrl": "http://vig.cdn.sos.ca.gov/2014/general/en/pdf/proposition-45-title-summary-analysis.pdf",
     "district" <= this is an array
     """
-    # print "Referendum contest_type"
+    logger.debug("Referendum contest_type")
     referendum_title = one_contest_referendum_structured_json['referendumTitle']
     referendum_subtitle = one_contest_referendum_structured_json['referendumSubtitle']
     referendum_url = one_contest_referendum_structured_json['referendumUrl']
@@ -675,7 +679,7 @@ def process_contest_referendum_from_structured_json(
 
                 # Save information about this contest item on the voter's ballot from: ballot_placement
             except Exception as e:
-                handle_record_not_found_exception(e)
+                handle_record_not_found_exception(e, logger=logger)
 
     return
 

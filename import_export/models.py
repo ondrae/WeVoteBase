@@ -5,7 +5,7 @@
 from django.contrib import messages
 from election_office_measure.models import Election, ContestOffice, CandidateCampaign, CandidateCampaignManager, \
     ContestMeasure, MeasureCampaign, BallotItem
-from exception.models import handle_exception, handle_exception_silently, handle_record_not_found_exception, \
+from exception.models import handle_exception, handle_record_not_found_exception, \
     handle_record_not_saved_exception
 from import_export_maplight.models import MapLightCandidate
 from import_export_google_civic.models import GoogleCivicBallotItem, GoogleCivicBallotItemManager, \
@@ -17,7 +17,12 @@ import os  # Needed to get WE_VOTE_API_KEY from an environment variable
 from politician.models import Politician
 from position.models import PositionEntered
 import requests
+import wevote_functions.admin
 from wevote_functions.models import value_exists
+
+
+logger = wevote_functions.admin.get_logger(__name__)
+
 
 def import_politician_data_from_theunitedstatesio():
     """
@@ -34,15 +39,18 @@ def transfer_theunitedstatesio_cached_data_to_wevote_tables():
     In this method, we take the cached theunitedstatesio data and move it into the core We Vote data
     :return:
     """
-    print "Running transfer_theunitedstatesio_cached_data_to_wevote_tables()"
+    logger.info("Running transfer_theunitedstatesio_cached_data_to_wevote_tables()")
 
     legislators_current_query = TheUnitedStatesIoLegislatorCurrent.objects.all()
     # Only retrieve entries that haven't been processed yet
     # legislators_current_query = legislators_current_query.filter(was_processed=False)
 
     for legislator_current_entry in legislators_current_query:
-        print 'Transferring: ' + str(legislator_current_entry.id) + ':' \
-              + legislator_current_entry.first_name + ' ' + legislator_current_entry.last_name
+        logger.info(u"Transferring {id}: {first_name} {last_name}".format(
+            id=str(legislator_current_entry.id),
+            first_name=legislator_current_entry.first_name,
+            last_name=legislator_current_entry.last_name
+        ))
         politician_entry_found = False
 
         #########################
@@ -59,7 +67,7 @@ def transfer_theunitedstatesio_cached_data_to_wevote_tables():
                     politician_entry = query1[0]
                     politician_entry_found = True
             except Exception as e:
-                handle_record_not_found_exception(e)
+                handle_record_not_found_exception(e, logger=logger)
 
         if not politician_entry_found:
             # TheUnitedStatesIoLegislatorCurrent was not found based on bioguide id
@@ -72,12 +80,12 @@ def transfer_theunitedstatesio_cached_data_to_wevote_tables():
                     # Was at least one existing entry found based on the above criteria?
                     if len(query1):
                         politician_entry = query1[0]
-                        print "FOUND"
+                        logger.debug("FOUND")
                         politician_entry_found = True
                     else:
-                        print "NOT FOUND"
+                        logger.debug("NOT FOUND")
                 except Exception as e:
-                    handle_record_not_found_exception(e)
+                    handle_record_not_found_exception(e, logger=logger)
 
         if not politician_entry_found:
             # TheUnitedStatesIoLegislatorCurrent was not found based on id_govtrack
@@ -86,20 +94,21 @@ def transfer_theunitedstatesio_cached_data_to_wevote_tables():
                 try:
                     full_name_assembled_guess = \
                         legislator_current_entry.first_name+" "+legislator_current_entry.last_name
-                    print "Searching for existing full_name_google_civic: {full_name_assembled}".format(
-                        full_name_assembled=full_name_assembled_guess)
+                    logger.info(u"Searching for existing full_name_google_civic: {full_name_assembled}".format(
+                        full_name_assembled=full_name_assembled_guess
+                    ))
                     query1 = Politician.objects.all()
                     query1 = query1.filter(full_name_google_civic=full_name_assembled_guess)
 
                     # Was at least one existing entry found based on the above criteria?
                     if len(query1):
                         politician_entry = query1[0]
-                        print "FOUND"
+                        logger.debug("FOUND")
                         politician_entry_found = True
                     else:
-                        print "NOT FOUND"
+                        logger.debug("NOT FOUND")
                 except Exception as e:
-                    handle_record_not_found_exception(e)
+                    handle_record_not_found_exception(e, logger=logger)
 
         if not politician_entry_found:
             # TheUnitedStatesIoLegislatorCurrent was not found based on full_name_google_civic
@@ -108,20 +117,21 @@ def transfer_theunitedstatesio_cached_data_to_wevote_tables():
                 try:
                     full_name_assembled_guess = \
                         legislator_current_entry.first_name+" "+legislator_current_entry.last_name
-                    print "Searching for existing full_name_assembled: {full_name_assembled}".format(
-                        full_name_assembled=full_name_assembled_guess)
+                    logger.info("Searching for existing full_name_assembled: {full_name_assembled}".format(
+                        full_name_assembled=full_name_assembled_guess
+                    ))
                     query1 = Politician.objects.all()
                     query1 = query1.filter(full_name_assembled=full_name_assembled_guess)
 
                     # Was at least one existing entry found based on the above criteria?
                     if len(query1):
                         politician_entry = query1[0]
-                        print "FOUND"
+                        logger.debug("FOUND")
                         politician_entry_found = True
                     else:
-                        print "NOT FOUND"
+                        logger.debug("NOT FOUND")
                 except Exception as e:
-                    handle_record_not_found_exception(e)
+                    handle_record_not_found_exception(e, logger=logger)
 
         if not politician_entry_found:
             # TheUnitedStatesIoLegislatorCurrent was not found
@@ -173,7 +183,7 @@ def transfer_theunitedstatesio_cached_data_to_wevote_tables():
             # Mark the source entry as was_processed so we don't try to import the same data again
             # legislator_current_entry.save()
         except Exception as e:
-            handle_exception(e)
+            handle_exception(e, logger=logger)
 
 
 def transfer_google_civic_voterinfo_cached_data_to_wevote_tables():
@@ -181,7 +191,7 @@ def transfer_google_civic_voterinfo_cached_data_to_wevote_tables():
     In this method, we take the cached google civic data and move it into the core We Vote data with some grooming
     :return:
     """
-    print "Running transfer_google_civic_voterinfo_cached_data_to_wevote_tables()"
+    logger.info("Running transfer_google_civic_voterinfo_cached_data_to_wevote_tables()")
 
     # Capture election information
     google_civic_save_election()
@@ -221,7 +231,7 @@ def google_civic_save_election():
                     election_entry = query1[0]
                     election_exists_locally = True
             except Exception as e:
-                handle_record_not_found_exception(e)
+                handle_record_not_found_exception(e, logger=logger)
                 continue
 
         try:
@@ -249,7 +259,7 @@ def google_civic_save_election():
             google_civic_election_entry.save()
 
         except Exception as e:
-            handle_record_not_saved_exception(e)
+            handle_record_not_saved_exception(e, logger=logger)
             continue
     # END OF google_civic_save_election
 
@@ -262,8 +272,9 @@ def google_civic_link_politician_to_campaign():
     for google_civic_candidate_campaign_entry in google_civic_candidate_campaign_query:
 
         if not google_civic_candidate_campaign_entry.google_civic_election_id:
-            print "We cannot proceed with {name} -- there is no google_civic_election_id".format(
-                name=google_civic_candidate_campaign_entry.name)
+            logger.error(u"We cannot proceed with {name} -- there is no google_civic_election_id".format(
+                name=google_civic_candidate_campaign_entry.name
+            ))
             continue
 
         try:
@@ -274,10 +285,12 @@ def google_civic_link_politician_to_campaign():
             if len(election_query) == 1:
                 election_on_stage = election_query[0]
             else:
-                print "ERROR: Break out of main loop without an election_on_stage -- single Election entry not found"
+                logger.error(
+                    "Break out of main loop without an election_on_stage -- single Election entry not found"
+                )
                 continue
         except Exception as e:
-            handle_record_not_found_exception(e)
+            handle_record_not_found_exception(e, logger=logger)
             continue
 
         ###########################################
@@ -291,8 +304,10 @@ def google_civic_link_politician_to_campaign():
         try:
             contest_office_error = results['error_result']
             if contest_office_error:
-                print "ERROR returned in google_civic_get_or_create_contest_office "\
-                      "(skipping to next google_civic_candidate_campaign_entry)"
+                logger.error(
+                    "Returned in google_civic_get_or_create_contest_office"\
+                    "(skipping to next google_civic_candidate_campaign_entry)"
+                )
                 continue
             contest_office_on_stage = results['contest_office_on_stage']
             # contest_office_created = results['contest_office_created']
@@ -301,7 +316,7 @@ def google_civic_link_politician_to_campaign():
             contest_office_on_stage.election_id = election_on_stage.id
             contest_office_on_stage.save()  # We save here AND lower in case there are failures
         except Exception as e:
-            handle_record_not_saved_exception(e)
+            handle_record_not_saved_exception(e, logger=logger)
             continue
 
         ###########################################
@@ -310,8 +325,10 @@ def google_civic_link_politician_to_campaign():
         results = google_civic_get_or_create_candidate_campaign_basic(google_civic_candidate_campaign_entry)
         candidate_campaign_error = results['error_result']
         if candidate_campaign_error:
-            print "ERROR returned in google_civic_get_or_create_candidate_campaign_basic "\
-                  "(skipping to next google_civic_candidate_campaign_entry)"
+            logger.error(
+                "Returned in google_civic_get_or_create_candidate_campaign_basic "\
+                "(skipping to next google_civic_candidate_campaign_entry)"
+            )
             continue
         # politician_link_needed = results['politician_link_needed']
         # candidate_campaign_created = results['candidate_campaign_created']
@@ -337,7 +354,7 @@ def google_civic_link_politician_to_campaign():
             google_civic_candidate_campaign_entry.we_vote_candidate_campaign_id = candidate_campaign_on_stage.id
             google_civic_candidate_campaign_entry.save()  # We save here AND lower in case there are failures
         except Exception as e:
-            handle_record_not_saved_exception(e)
+            handle_record_not_saved_exception(e, logger=logger)
             continue
 
         ###########################################
@@ -347,8 +364,10 @@ def google_civic_link_politician_to_campaign():
         results = google_civic_get_or_create_politician(google_civic_candidate_campaign_entry)
         politician_error = results['error_result']
         if politician_error:
-            print "ERROR returned in google_civic_get_or_create_politician "\
-                  "(skipping to next google_civic_candidate_campaign_entry)"
+            logger.error(
+                "Returned in google_civic_get_or_create_politician "\
+                "(skipping to next google_civic_candidate_campaign_entry)"
+            )
             continue
         politician_on_stage = results['politician_on_stage']
 
@@ -359,7 +378,7 @@ def google_civic_link_politician_to_campaign():
             google_civic_candidate_campaign_entry.we_vote_politician_id = politician_on_stage.id
             google_civic_candidate_campaign_entry.save()
         except Exception as e:
-            handle_record_not_saved_exception(e)
+            handle_record_not_saved_exception(e, logger=logger)
             continue
     # END OF google_civic_link_politician_to_campaign
 
@@ -375,7 +394,7 @@ def google_civic_get_or_create_contest_office(google_civic_candidate_campaign_en
     try:
         # When we import from google, we link a google_civic_contest_office entry (with an internal id) to
         #  google_civic_candidate_campaign_entry
-        # print "Retrieving google_civic_contest_office"
+        logger.debug("Retrieving google_civic_contest_office")
         google_civic_contest_office_query = GoogleCivicContestOffice.objects.all()
         google_civic_contest_office_query = google_civic_contest_office_query.filter(
             id=google_civic_candidate_campaign_entry.google_civic_contest_office_id)
@@ -383,13 +402,13 @@ def google_civic_get_or_create_contest_office(google_civic_candidate_campaign_en
         if len(google_civic_contest_office_query) == 1:
             google_civic_contest_office_on_stage = google_civic_contest_office_query[0]
         else:
-            print "Single google_civic_contest_office NOT found"
+            logger.error("Single google_civic_contest_office NOT found")
             return {
                 'error_result': True,
             }
 
         # Try to find earlier version based on the google_civic_election_id identifier
-        # print "Retrieving contest_office"
+        logger.debug("Retrieving contest_office")
         contest_office_query = ContestOffice.objects.all()
         contest_office_query = contest_office_query.filter(
             google_civic_election_id=google_civic_contest_office_on_stage.google_civic_election_id)
@@ -407,14 +426,15 @@ def google_civic_get_or_create_contest_office(google_civic_candidate_campaign_en
             # TODO Update contest_office information here
         elif len(contest_office_query) > 1:
             # We have bad data - a duplicate
-            print "We have bad data, a duplicate ContestOffice entry: {office}".format(
-                office=google_civic_contest_office_on_stage.office)
+            logger.error(u"We have bad data, a duplicate ContestOffice entry: {office}".format(
+                office=google_civic_contest_office_on_stage.office
+            ))
             return {
                 'error_result': True,
             }
         else:
             # Create a new ContestOffice entry
-            # print "Creating contest_office"
+            logger.debug("Creating contest_office")
             contest_office_on_stage = ContestOffice(
                 office_name=google_civic_contest_office_on_stage.office,
                 election_id=election_on_stage.id,
@@ -435,7 +455,7 @@ def google_civic_get_or_create_contest_office(google_civic_candidate_campaign_en
 
         # Save the ballot_placement
         # Try to find earlier version based on the google_civic_election_id identifier
-        # print "Retrieving BallotItem"
+        logger.debug("Retrieving BallotItem")
         ballot_item_query = BallotItem.objects.all()
         ballot_item_query = ballot_item_query.filter(voter_id=1)
         ballot_item_query = ballot_item_query.filter(
@@ -446,7 +466,7 @@ def google_civic_get_or_create_contest_office(google_civic_candidate_campaign_en
             ballot_item_on_stage_found = True
     except Exception as e:
         error_result = True
-        handle_record_not_found_exception(e)
+        handle_record_not_found_exception(e, logger=logger)
 
     try:
         voter_id = 1
@@ -465,7 +485,7 @@ def google_civic_get_or_create_contest_office(google_civic_candidate_campaign_en
             ballot_item_on_stage.election_id = election_on_stage.id
             # TODO Add all values here
         else:
-            # print "Creating BallotItem"
+            logger.debug("Creating BallotItem")
             ballot_item_on_stage = BallotItem(
                 voter_id=voter_id,
                 election_id=election_on_stage.id,
@@ -478,7 +498,7 @@ def google_civic_get_or_create_contest_office(google_civic_candidate_campaign_en
         ballot_item_on_stage.save()
     except Exception as e:
         error_result = True
-        handle_record_not_saved_exception(e)
+        handle_record_not_saved_exception(e, logger=logger)
 
     results = {
         'error_result': error_result,
@@ -519,7 +539,7 @@ def google_civic_get_or_create_candidate_campaign_basic(google_civic_candidate_c
                 politician_link_needed = False
     except Exception as e:
         error_result = True
-        handle_record_not_found_exception(e)
+        handle_record_not_found_exception(e, logger=logger)
 
     if not candidate_campaign_exists_locally:
         # An entry in the local CandidateCampaign table was not found
@@ -534,7 +554,7 @@ def google_civic_get_or_create_candidate_campaign_basic(google_civic_candidate_c
             candidate_campaign_created = True
         except Exception as e:
             error_result = True
-            handle_record_not_saved_exception(e)
+            handle_record_not_saved_exception(e, logger=logger)
 
     results = {
         'error_result': error_result,
@@ -556,7 +576,7 @@ def google_civic_get_or_create_politician(google_civic_candidate_campaign_entry)
     first_name_guess = google_civic_candidate_campaign_entry.name.partition(' ')[0]
     last_name_guess = google_civic_candidate_campaign_entry.name.partition(' ')[-1]
     try:
-        # print "We are searching based on full_name_google_civic"
+        logger.debug("We are searching based on full_name_google_civic")
         query1 = Politician.objects.all()
         query1 = query1.filter(full_name_google_civic=google_civic_candidate_campaign_entry.name)
 
@@ -566,18 +586,21 @@ def google_civic_get_or_create_politician(google_civic_candidate_campaign_entry)
             politician_on_stage_found = True
             if len(query1) > 1:
                 # We have confusion, so skip processing this google_civic_candidate_campaign_entry
-                print "More than one Politician found (query1)"
+                logger.warn("More than one Politician found (query1)")
         else:
-            print "No politician found based on full_name_google_civic: {name}".format(
-                name=google_civic_candidate_campaign_entry.name)
+            logger.warn(u"No politician found based on full_name_google_civic: {name}".format(
+                name=google_civic_candidate_campaign_entry.name
+            ))
     except Exception as e:
-        handle_record_not_found_exception(e)
+        handle_record_not_found_exception(e, logger=logger)
 
     if not politician_on_stage_found:
         # No entries were found, so we need to
         # a) Search more deeply
         # Searching based on full_name_assembled
-        print "Searching against full_name_assembled: {name}".format(name=google_civic_candidate_campaign_entry.name)
+        logger.info(u"Searching against full_name_assembled: {name}".format(
+            name=google_civic_candidate_campaign_entry.name
+        ))
         # TODO DALE 2015-05-02 With this code, if we had imported a "Betty T. Yee" from another non-google-civic
         #  source (where full_name_google_civic was empty), we would create a second Politician entry. Fix this.
         try:
@@ -589,16 +612,19 @@ def google_civic_get_or_create_politician(google_civic_candidate_campaign_entry)
                 politician_on_stage = politician_query_full_name_assembled[0]
                 politician_on_stage_found = True
             else:
-                print "No politician found based on full_name_assembled: {name}".format(
-                    name=google_civic_candidate_campaign_entry.name)
+                logger.warn(u"No politician found based on full_name_assembled: {name}".format(
+                    name=google_civic_candidate_campaign_entry.name
+                ))
         except Exception as e:
-            handle_record_not_found_exception(e)
+            handle_record_not_found_exception(e, logger=logger)
 
     if not politician_on_stage_found:
         # No entries were found, so we need to
         # a) Search more deeply
-        print "first_name_guess: {first_name_guess}, last_name_guess: {last_name_guess}".format(
-            first_name_guess=first_name_guess, last_name_guess=last_name_guess)
+        logger.info(u"first_name_guess: {first_name_guess}, last_name_guess: {last_name_guess}".format(
+            first_name_guess=first_name_guess,
+            last_name_guess=last_name_guess
+        ))
         # TODO DALE 2015-05-02 With this code, if we had imported a "Betty T. Yee" from another non-google-civic
         #  source (where full_name_google_civic was empty), we would create a second Politician entry. Fix this.
         try:
@@ -610,19 +636,25 @@ def google_civic_get_or_create_politician(google_civic_candidate_campaign_entry)
                 politician_on_stage = politician_query_first_last_guess[0]
                 politician_on_stage_found = True
             else:
-                print "No politician found based on first_name_guess: {first_name} " \
-                      "and last_name_guess: {last_name}".format(first_name=first_name_guess,
-                                                                last_name=last_name_guess)
+                logger.warn(
+                    "No politician found based on first_name_guess: {first_name} " \
+                    "and last_name_guess: {last_name}".format(
+                        first_name=first_name_guess,
+                        last_name=last_name_guess
+                    )
+                )
         except Exception as e:
-            handle_record_not_found_exception(e)
+            handle_record_not_found_exception(e, logger=logger)
 
     try:
         if politician_on_stage_found:
             # We found a match, and want to update the Politician data to match how Google Civic references the name
-            # print "Store google_civic_candidate_campaign_entry.name in Politician.full_name_google_civic"
+            logger.debug("Store google_civic_candidate_campaign_entry.name in Politician.full_name_google_civic")
             politician_on_stage.full_name_google_civic = google_civic_candidate_campaign_entry.name
         else:
-            # print "Create Politician entry: {name}".format(name=google_civic_candidate_campaign_entry.name)
+            logger.debug("Create Politician entry: {name}".format(
+                name=google_civic_candidate_campaign_entry.name
+            ))
             politician_on_stage = Politician(
                 # Do not save first_name or last_name because middle initials will throw this off
                 last_name=last_name_guess,
@@ -631,15 +663,14 @@ def google_civic_get_or_create_politician(google_civic_candidate_campaign_entry)
             )
         politician_on_stage.save()
     except Exception as e:
-        handle_record_not_saved_exception(e)
+        handle_record_not_saved_exception(e, logger=logger)
 
     if error_result:
-        print "There was an error trying to create a politician"
-    # else:
-        # print "It seems we have found a politician: {display_full_name}".format(
-        # display_full_name=politician_on_stage.display_full_name())
-        # print "It seems we have found a politician: "+str(politician_on_stage.display_full_name())
-        # print "It seems we found or created a politician."
+        logger.error("There was an error trying to create a politician")
+    else:
+        logger.debug("It seems we have found a politician: {display_full_name}".format(
+            display_full_name=politician_on_stage.display_full_name()
+        ))
 
     results = {
         'error_result': error_result,
@@ -668,22 +699,22 @@ def import_we_vote_organizations_from_json(request, load_from_uri=False):
     """
     if load_from_uri:
         # Request json file from We Vote servers
-        print "Loading Organizations from We Vote Master servers"
+        logger.info("Loading Organizations from We Vote Master servers")
         request = requests.get(ORGANIZATIONS_URL, params={
             "key": WE_VOTE_API_KEY,  # This comes from an environment variable
         })
         structured_json = json.loads(request.text)
     else:
         # Load saved json from local file
-        print "Loading organizations from local file"
+        logger.info("Loading organizations from local file")
 
         with open(ORGANIZATIONS_JSON_FILE) as json_data:
             structured_json = json.load(json_data)
 
     for one_organization in structured_json:
-        print "id_we_vote: {id_we_vote}, name: {name}, url: {url}".format(id_we_vote=one_organization["id_we_vote"],
-                                                                          name=one_organization["name"],
-                                                                          url=one_organization["url"],)
+        logger.debug(
+            u"id_we_vote: {id_we_vote}, name: {name}, url: {url}".format(**one_organization)
+        )
         # Make sure we have the minimum required variables
         if len(one_organization["id_we_vote"]) == 0 or len(one_organization["name"]) == 0:
             continue
@@ -702,7 +733,7 @@ def import_we_vote_organizations_from_json(request, load_from_uri=False):
                     organization_on_stage = organization_query[0]
                     organization_on_stage_found = True
         except Exception as e:
-            handle_record_not_found_exception(e)
+            handle_record_not_found_exception(e, logger=logger)
 
         try:
             if organization_on_stage_found:
@@ -711,7 +742,7 @@ def import_we_vote_organizations_from_json(request, load_from_uri=False):
                 organization_on_stage.name = one_organization["name"]
                 organization_on_stage.url = one_organization["url"]
                 organization_on_stage.save()
-                messages.add_message(request, messages.INFO, "Organization updated: {name}".format(
+                messages.add_message(request, messages.INFO, u"Organization updated: {name}".format(
                     name=one_organization["name"]))
             else:
                 # Create new
@@ -721,13 +752,13 @@ def import_we_vote_organizations_from_json(request, load_from_uri=False):
                     url=one_organization["url"],
                 )
                 organization_on_stage.save()
-                messages.add_message(request, messages.INFO, "New organization imported: {name}".format(
+                messages.add_message(request, messages.INFO, u"New organization imported: {name}".format(
                     name=one_organization["name"]))
         except Exception as e:
-            handle_record_not_saved_exception(e)
+            handle_record_not_saved_exception(e, logger=logger)
             messages.add_message(
                 request, messages.ERROR,
-                "Could not save Organization, id_we_vote: {id_we_vote}, name: {name}, url: {url}".format(
+                u"Could not save Organization, id_we_vote: {id_we_vote}, name: {name}, url: {url}".format(
                     id_we_vote=one_organization["id_we_vote"],
                     name=one_organization["name"],
                     url=one_organization["url"],))
@@ -763,23 +794,23 @@ def import_we_vote_candidate_campaigns_from_json(request, load_from_uri=False):
                     candidate_campaign_on_stage = candidate_campaign_query[0]
                     candidate_campaign_on_stage_found = True
         except Exception as e:
-            handle_record_not_found_exception(e)
+            handle_record_not_found_exception(e, logger=logger)
 
         try:
             if candidate_campaign_on_stage_found:
                 # Update
                 candidate_campaign_on_stage.id_we_vote = one_candidate_campaign["id_we_vote"]
                 candidate_campaign_on_stage.save()
-                messages.add_message(request, messages.INFO, "CandidateCampaign updated: {candidate_name}".format(
+                messages.add_message(request, messages.INFO, u"CandidateCampaign updated: {candidate_name}".format(
                     candidate_name=one_candidate_campaign["candidate_name"]))
             else:
-                messages.add_message(request, messages.ERROR, "CandidateCampaign not found: {candidate_name}".format(
+                messages.add_message(request, messages.ERROR, u"CandidateCampaign not found: {candidate_name}".format(
                     candidate_name=one_candidate_campaign["candidate_name"]))
         except Exception as e:
-            handle_record_not_saved_exception(e)
+            handle_record_not_saved_exception(e, logger=logger)
             messages.add_message(request, messages.ERROR,
-                                 "Could not save CandidateCampaign, id_we_vote: {id_we_vote}, "
-                                 "candidate_name: {candidate_name}, ".format(
+                                 u"Could not save CandidateCampaign, id_we_vote: {id_we_vote}, "
+                                 u"candidate_name: {candidate_name}, ".format(
                                      id_we_vote=one_candidate_campaign["id_we_vote"],
                                      candidate_name=one_candidate_campaign["candidate_name"],))
 
@@ -819,9 +850,9 @@ def import_we_vote_positions_from_json(request, load_from_uri=False):
                     position_on_stage = position_query[0]
                     position_on_stage_found = True
         except PositionEntered.DoesNotExist as e:
-            handle_exception_silently(e)
+            pass
         except Exception as e:
-            handle_record_not_found_exception(e)
+            handle_record_not_found_exception(e, logger=logger)
 
         # We need to look up the local organization_id based on the newly saved we_vote_id
         organization_manager = OrganizationManager()
@@ -849,7 +880,7 @@ def import_we_vote_positions_from_json(request, load_from_uri=False):
                 position_on_stage.statement_text = one_position["statement_text"]
                 position_on_stage.statement_html = one_position["statement_html"]
                 position_on_stage.save()
-                messages.add_message(request, messages.INFO, "Position updated: {id_we_vote}".format(
+                messages.add_message(request, messages.INFO, u"Position updated: {id_we_vote}".format(
                     id_we_vote=one_position["id_we_vote"]))
             else:
                 # Create new
@@ -866,16 +897,15 @@ def import_we_vote_positions_from_json(request, load_from_uri=False):
                     statement_html=one_position["statement_html"],
                 )
                 position_on_stage.save()
-                messages.add_message(request, messages.INFO, "New position imported: {id_we_vote}".format(
+                messages.add_message(request, messages.INFO, u"New position imported: {id_we_vote}".format(
                     id_we_vote=one_position["id_we_vote"]))
         except Exception as e:
-            handle_record_not_saved_exception(e)
+            handle_record_not_saved_exception(e, logger=logger)
             messages.add_message(request, messages.ERROR,
-                                 "Could not save position, id_we_vote: {id_we_vote}, "
-                                 "organization_id_we_vote: {organization_id_we_vote}, "
-                                 "candidate_campaign_id_we_vote: {candidate_campaign_id_we_vote}".format(
+                                 u"Could not save position, id_we_vote: {id_we_vote}, "
+                                 u"organization_id_we_vote: {organization_id_we_vote}, "
+                                 u"candidate_campaign_id_we_vote: {candidate_campaign_id_we_vote}".format(
                                      id_we_vote=one_position["id_we_vote"],
                                      organization_id_we_vote=one_position["organization_id_we_vote"],
                                      candidate_campaign_id_we_vote=one_position["candidate_campaign_id_we_vote"],
                                  ))
-

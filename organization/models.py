@@ -3,9 +3,14 @@
 # -*- coding: UTF-8 -*-
 
 from django.db import models
-from exception.models import handle_exception, handle_exception_silently, handle_record_found_more_than_one_exception,\
+from exception.models import handle_exception, handle_record_found_more_than_one_exception,\
     handle_record_not_found_exception, handle_record_not_saved_exception
+import wevote_functions.admin
 from wevote_settings.models import fetch_next_id_we_vote_last_org_integer, fetch_site_unique_id_prefix
+
+
+logger = wevote_functions.admin.get_logger(__name__)
+
 
 class Organization(models.Model):
     # We are relying on built-in Python id field
@@ -107,15 +112,14 @@ class OrganizationManager(models.Model):
                 organization_on_stage = Organization.objects.get(id_we_vote=id_we_vote)
                 organization_on_stage_id = organization_on_stage.id
         except Organization.MultipleObjectsReturned as e:
-            handle_record_found_more_than_one_exception(e)
+            handle_record_found_more_than_one_exception(e, logger)
             error_result = True
             exception_multiple_object_returned = True
-            print "Organization.MultipleObjectsReturned"
+            logger.warn("Organization.MultipleObjectsReturned")
         except Organization.DoesNotExist as e:
-            handle_exception_silently(e)
             error_result = True
             exception_does_not_exist = True
-            print "Organization.DoesNotExist"
+            logger.warn("Organization.DoesNotExist")
 
         organization_on_stage_found = True if organization_on_stage_id > 0 else False
         results = {

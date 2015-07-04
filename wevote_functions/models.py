@@ -5,6 +5,11 @@
 import datetime
 import random
 import string
+import wevote_functions.admin
+
+
+logger = wevote_functions.admin.get_logger(__name__)
+
 
 # Create your models here.
 class switch(object):
@@ -67,12 +72,16 @@ def get_voter_device_id(request, generate_if_no_cookie=False):
     voter_device_id = ''
     if 'voter_device_id' in request.COOKIES:
         voter_device_id = request.COOKIES['voter_device_id']
-        # print "from cookie, voter_device_id: {voter_device_id}".format(voter_device_id=voter_device_id)
+        logger.debug("from cookie, voter_device_id: {voter_device_id}".format(
+            voter_device_id=voter_device_id
+        ))
     if voter_device_id == '' and generate_if_no_cookie:
         voter_device_id = generate_voter_device_id()  # Stored in cookie below
         # If we set this here, we won't know whether we need to store the cookie in set_voter_device_id
         # request.COOKIES['voter_device_id'] = voter_device_id  # Set it here for use in the remainder of this page load
-        # print "generate_voter_device_id, voter_device_id: {voter_device_id}".format(voter_device_id=voter_device_id)
+        logger.debug("generate_voter_device_id, voter_device_id: {voter_device_id}".format(
+            voter_device_id=voter_device_id
+        ))
     return voter_device_id
 
 def set_voter_device_id(request, response, voter_device_id):

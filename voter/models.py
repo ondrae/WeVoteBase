@@ -9,11 +9,16 @@ from django.contrib.auth.models import (
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.utils import timezone
-from exception.models import handle_exception, handle_exception_silently, handle_record_found_more_than_one_exception,\
+from exception.models import handle_exception, handle_record_found_more_than_one_exception,\
     handle_record_not_found_exception, handle_record_not_saved_exception
 from region_jurisdiction.models import Jurisdiction
+import wevote_functions.admin
 from wevote_functions.models import convert_to_int, generate_voter_device_id
 from validate_email import validate_email
+
+
+logger = wevote_functions.admin.get_logger(__name__)
+
 
 # This way of extending the base user described here:
 # https://docs.djangoproject.com/en/1.8/topics/auth/customizing/#a-full-example
@@ -74,7 +79,7 @@ class VoterManager(BaseUserManager):
             voter.save()
             voter_id = voter.id
         except Exception as e:
-            handle_record_not_saved_exception(e)
+            handle_record_not_saved_exception(e, logger=logger)
 
         results = {
             'email_not_valid':      email_not_valid,
@@ -144,11 +149,10 @@ class VoterManager(BaseUserManager):
                 voter_id = 0
                 error_result = True
         except Voter.MultipleObjectsReturned as e:
-            handle_record_found_more_than_one_exception(e)
+            handle_record_found_more_than_one_exception(e, logger=logger)
             error_result = True
             exception_multiple_object_returned = True
         except Voter.DoesNotExist as e:
-            handle_exception_silently(e)
             error_result = True
             exception_does_not_exist = True
 
@@ -163,12 +167,12 @@ class VoterManager(BaseUserManager):
         return results
 
     def create_voter_with_voter_device_id(self, voter_device_id):
-        print "create_voter_with_voter_device_id(voter_device_id)"
+        logger.info("create_voter_with_voter_device_id(voter_device_id)")
 
     def clear_out_abandoned_voter_records(self):
         # We will need a method that identifies and deletes abandoned voter records that don't have enough information
         #  to ever be used
-        print "clear_out_abandoned_voter_records"
+        logger.info("clear_out_abandoned_voter_records")
 
 class Voter(AbstractBaseUser):
     """
@@ -311,11 +315,10 @@ class VoterDeviceLinkManager(models.Model):
             else:
                 voter_device_link_id = 0
         except VoterDeviceLink.MultipleObjectsReturned as e:
-            handle_record_found_more_than_one_exception(e)
+            handle_record_found_more_than_one_exception(e, logger=logger)
             error_result = True
             exception_multiple_object_returned = True
         except VoterDeviceLink.DoesNotExist as e:
-            handle_exception_silently(e)
             error_result = True
             exception_does_not_exist = True
 
@@ -346,7 +349,7 @@ class VoterDeviceLinkManager(models.Model):
                 missing_required_variables = True
                 voter_device_link_id = 0
         except Exception as e:
-            handle_record_not_saved_exception(e)
+            handle_record_not_saved_exception(e, logger=logger)
             error_result = True
             exception_record_not_saved = True
 

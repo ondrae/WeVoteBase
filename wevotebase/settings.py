@@ -14,9 +14,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.8/ref/settings/
 """
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+import logging
 import os
 
+
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -245,6 +247,19 @@ SOCIAL_AUTH_PIPELINE = (
     'social.pipeline.social_auth.load_extra_data',
     'social.pipeline.user.user_details'
 )
+
+########### Logging configurations ###########
+#   LOG_STREAM          Boolean     True will turn on stream handler.
+#   LOG_FILE            String      Path to file to write to. Make sure executing
+#                                   user has permissions.
+#   LOG_STREAM_LEVEL    Integer     Log level of stream handler.
+#   LOG_FILE_LEVEL      Integer     Log level of file handler.
+
+LOG_STREAM = True
+LOG_FILE = None
+#LOG_FILE = "/var/log/wevote/wevote.log"
+LOG_STREAM_LEVEL = logging.INFO
+LOG_FILE_LEVEL = logging.ERROR
 
 ########### Heroku Settings ###########
 # Comment out to run database locally
