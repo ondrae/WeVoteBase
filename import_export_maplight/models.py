@@ -2,14 +2,12 @@
 # Brought to you by We Vote. Be good.
 # -*- coding: UTF-8 -*-
 
-import json
-import wevote_functions.admin
-
 from datetime import datetime
 from django.db import models
 from election_office_measure.models import CandidateCampaign, ContestOffice, ContestOfficeManager
-from exception.models import handle_exception_silently, handle_record_found_more_than_one_exception, \
-    handle_record_not_saved_exception
+from exception.models import handle_record_found_more_than_one_exception, handle_record_not_saved_exception
+import json
+import wevote_functions.admin
 
 
 logger = wevote_functions.admin.get_logger(__name__)
@@ -80,10 +78,9 @@ class MapLightContestOfficeManager(models.Model):
                 maplight_contest_office_on_stage = MapLightContestOffice.objects.get(contest_id=id_maplight)
                 contest_office_id = maplight_contest_office_on_stage.id
         except MapLightContestOffice.MultipleObjectsReturned as e:
-            handle_record_found_more_than_one_exception(e)
+            handle_record_found_more_than_one_exception(e, logger=logger)
             exception_multiple_object_returned = True
         except MapLightContestOffice.DoesNotExist as e:
-            handle_exception_silently(e)
             exception_does_not_exist = True
 
         results = {
@@ -191,10 +188,9 @@ class MapLightCandidateManager(models.Model):
                 maplight_candidate_on_stage = MapLightCandidate.objects.get(politician_id=politician_id_maplight)
                 candidate_id = maplight_candidate_on_stage.id
         except MapLightCandidate.MultipleObjectsReturned as e:
-            handle_record_found_more_than_one_exception(e)
+            handle_record_found_more_than_one_exception(e, logger=logger)
             exception_multiple_object_returned = True
         except MapLightCandidate.DoesNotExist as e:
-            handle_exception_silently(e)
             exception_does_not_exist = True
 
         results = {
@@ -254,7 +250,6 @@ def import_maplight_from_json(request):
                         with open(json_file_with_the_data_from_this_contest) as json_data:
                             politicians_running_for_one_contest_array = json.load(json_data)
                     except Exception as e:
-                        handle_exception_silently(e)
                         logger.error("File {file_path} not found.".format(
                             file_path=json_file_with_the_data_from_this_contest
                         ))
@@ -323,7 +318,7 @@ def import_maplight_contest_office_candidates_from_array(politicians_running_for
                     maplight_contest_office_saved = True
 
                 except Exception as e:
-                    handle_record_not_saved_exception(e)
+                    handle_record_not_saved_exception(e, logger=logger)
 
         maplight_candidate = maplight_candidate_manager.fetch_maplight_candidate_from_candidate_id_maplight(
             one_politician_array['candidate_id'])
@@ -361,6 +356,6 @@ def import_maplight_contest_office_candidates_from_array(politicians_running_for
                 ))
 
             except Exception as e:
-                handle_record_not_saved_exception(e)
+                handle_record_not_saved_exception(e, logger=logger)
 
         # TODO: Now link the candidate to the contest

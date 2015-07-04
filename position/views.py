@@ -7,14 +7,18 @@ from django.shortcuts import render
 from django.contrib import messages
 from django.contrib.messages import get_messages
 from election_office_measure.models import CandidateCampaignManager
-from exception.models import handle_exception, handle_exception_silently, handle_record_found_more_than_one_exception,\
+from exception.models import handle_exception, handle_record_found_more_than_one_exception,\
     handle_record_not_deleted_exception, handle_record_not_found_exception, handle_record_not_saved_exception
 from follow.models import FollowOrganizationList
 from organization.models import OrganizationManager
 from position.models import ANY, SUPPORT, NO_STANCE, INFORMATION_ONLY, STILL_DECIDING, OPPOSE, \
     PositionListForCandidateCampaign
 from voter.models import fetch_voter_id_from_voter_device_link
+import wevote_functions.admin
 from wevote_functions.models import convert_to_int, get_voter_device_id
+
+
+logger = wevote_functions.admin.get_logger(__name__)
 
 
 def positions_count_for_candidate_campaign_view(request, candidate_campaign_id, stance_we_are_looking_for,
@@ -26,7 +30,7 @@ def positions_count_for_candidate_campaign_view(request, candidate_campaign_id, 
     :return:
     """
     if stance_we_are_looking_for not in(ANY, SUPPORT, NO_STANCE, INFORMATION_ONLY, STILL_DECIDING, OPPOSE):
-        print stance_we_are_looking_for
+        logger.debug(stance_we_are_looking_for)
         return JsonResponse({0: "stance not recognized"})
 
     # This implementation is built to make only two database calls. All other calculations are done here in the
@@ -63,7 +67,7 @@ def positions_related_to_candidate_campaign_view(request, candidate_campaign_id,
     :return:
     """
     if stance_we_are_looking_for not in(SUPPORT, NO_STANCE, INFORMATION_ONLY, STILL_DECIDING, OPPOSE):
-        print stance_we_are_looking_for
+        logger.debug(stance_we_are_looking_for)
         return JsonResponse({0: "stance not recognized"})
 
     # This implementation is built to make only two database calls. All other calculations are done here in the
@@ -471,11 +475,11 @@ def positions_display_list_related_to_candidate_campaign(request, candidate_camp
         follow_organization_list_manager.retrieve_follow_organization_info_for_voter_simple_array(voter_id)
 
     if show_only_followed_positions == 1:
-        # print "positions_display_list: show only followed positions"
+        logger.debug("positions_display_list: show only followed positions")
         list_to_display = position_list_manager.calculate_positions_followed_by_voter(
             voter_id, all_positions_list_for_candidate_campaign, organizations_followed_by_voter)
     elif show_only_not_followed_positions == 1:
-        # print "positions_display_list: show only NOT followed positions"
+        logger.debug("positions_display_list: show only NOT followed positions")
         list_to_display = position_list_manager.calculate_positions_not_followed_by_voter(
             all_positions_list_for_candidate_campaign, organizations_followed_by_voter)
     else:

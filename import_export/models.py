@@ -5,7 +5,7 @@
 from django.contrib import messages
 from election_office_measure.models import Election, ContestOffice, CandidateCampaign, CandidateCampaignManager, \
     ContestMeasure, MeasureCampaign, BallotItem
-from exception.models import handle_exception, handle_exception_silently, handle_record_not_found_exception, \
+from exception.models import handle_exception, handle_record_not_found_exception, \
     handle_record_not_saved_exception
 from import_export_maplight.models import MapLightCandidate
 from import_export_google_civic.models import GoogleCivicBallotItem, GoogleCivicBallotItemManager, \
@@ -667,11 +667,10 @@ def google_civic_get_or_create_politician(google_civic_candidate_campaign_entry)
 
     if error_result:
         logger.error("There was an error trying to create a politician")
-    # else:
-        # print "It seems we have found a politician: {display_full_name}".format(
-        # display_full_name=politician_on_stage.display_full_name())
-        # print "It seems we have found a politician: "+str(politician_on_stage.display_full_name())
-        # print "It seems we found or created a politician."
+    else:
+        logger.debug("It seems we have found a politician: {display_full_name}".format(
+            display_full_name=politician_on_stage.display_full_name()
+        ))
 
     results = {
         'error_result': error_result,

@@ -3,7 +3,7 @@
 # -*- coding: UTF-8 -*-
 
 from django.db import models
-from exception.models import handle_exception, handle_exception_silently, handle_record_found_more_than_one_exception,\
+from exception.models import handle_exception, handle_record_found_more_than_one_exception,\
     handle_record_not_found_exception, handle_record_not_saved_exception
 import wevote_functions.admin
 from wevote_settings.models import fetch_next_id_we_vote_last_org_integer, fetch_site_unique_id_prefix

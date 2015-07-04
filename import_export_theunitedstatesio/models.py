@@ -7,6 +7,8 @@ from exception.models import handle_exception, handle_record_not_found_exception
 import csv
 from datetime import datetime
 from collections import namedtuple
+import wevote_functions.admin
+
 
 LEGISLATORS_CURRENT_CSV_FILE = 'import_export_theunitedstatesio/import_data/legislators-current.csv'
 # UnitedStates.io CSV Field names
@@ -41,6 +43,8 @@ legislators_current_fields = (
     "icpsr_id",               # row[27]
     "wikipedia_id"            # row[28]
 )
+
+logger = wevote_functions.admin.get_logger(__name__)
 
 
 class TheUnitedStatesIoLegislatorCurrent(models.Model):
@@ -114,7 +118,7 @@ def import_legislators_current_csv():
         for index, legislator_row in enumerate(reader):
             # if index > 7:
             #     break
-            # print "import_legislators_current_csv: " + legislator_row[0] # For debugging
+            logger.debug("import_legislators_current_csv: " + legislator_row[0]) # For debugging
             legislator_entry_found = False
 
             # Do we have a record of this legislator based on bioguide_id?
@@ -128,7 +132,7 @@ def import_legislators_current_csv():
                         legislator_entry = query1[0]
                         legislator_entry_found = True
                 except Exception as e:
-                    handle_record_not_found_exception(e)
+                    handle_record_not_found_exception(e, logger=logger)
 
             if not legislator_entry_found:
                 # TheUnitedStatesIoLegislatorCurrent was not found based on bioguide id
@@ -143,7 +147,7 @@ def import_legislators_current_csv():
                             legislator_entry = query2[0]
                             legislator_entry_found = True
                     except Exception as e:
-                        handle_record_not_found_exception(e)
+                        handle_record_not_found_exception(e, logger=logger)
 
             if not legislator_entry_found:
                 # TheUnitedStatesIoLegislatorCurrent was not found based on govtrack id
@@ -187,7 +191,7 @@ def import_legislators_current_csv():
             try:
                 legislator_entry.save()
             except Exception as e:
-                handle_exception(e)
+                handle_exception(e, logger=logger)
 
 
 def delete_all_legislator_data():

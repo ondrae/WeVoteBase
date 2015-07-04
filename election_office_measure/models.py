@@ -3,7 +3,7 @@
 # -*- coding: UTF-8 -*-
 
 from django.db import models
-from exception.models import handle_exception_silently, handle_record_found_more_than_one_exception
+from exception.models import handle_record_found_more_than_one_exception
 from politician.models import PoliticianManager
 import re  # Reg ex
 from wevote_settings.models import fetch_next_id_we_vote_last_candidate_campaign_integer, \
@@ -127,10 +127,9 @@ class ContestOfficeManager(models.Model):
                 contest_office_on_stage = ContestOffice.objects.get(id_maplight=id_maplight)
                 contest_office_id = contest_office_on_stage.id
         except ContestOffice.MultipleObjectsReturned as e:
-            handle_record_found_more_than_one_exception(e)
+            handle_record_found_more_than_one_exception(e, logger=logger)
             exception_multiple_object_returned = True
         except ContestOffice.DoesNotExist as e:
-            handle_exception_silently(e)
             exception_does_not_exist = True
 
         results = {
@@ -344,10 +343,9 @@ class CandidateCampaignManager(models.Model):
                 candidate_campaign_on_stage = CandidateCampaign.objects.get(candidate_name=candidate_name)
                 candidate_campaign_id = candidate_campaign_on_stage.id
         except CandidateCampaign.MultipleObjectsReturned as e:
-            handle_record_found_more_than_one_exception(e)
+            handle_record_found_more_than_one_exception(e, logger=logger)
             exception_multiple_object_returned = True
         except CandidateCampaign.DoesNotExist as e:
-            handle_exception_silently(e)
             exception_does_not_exist = True
 
         results = {

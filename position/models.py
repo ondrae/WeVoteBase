@@ -5,7 +5,7 @@
 
 from django.db import models
 from election_office_measure.models import CandidateCampaign, MeasureCampaign
-from exception.models import handle_exception, handle_exception_silently, handle_record_found_more_than_one_exception,\
+from exception.models import handle_exception, handle_record_found_more_than_one_exception,\
     handle_record_not_found_exception, handle_record_not_saved_exception
 from organization.models import Organization
 from twitter.models import TwitterUser

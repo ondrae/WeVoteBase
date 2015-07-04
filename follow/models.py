@@ -3,7 +3,7 @@
 # -*- coding: UTF-8 -*-
 
 from django.db import models
-from exception.models import handle_exception, handle_exception_silently, handle_record_found_more_than_one_exception,\
+from exception.models import handle_exception, handle_record_found_more_than_one_exception,\
     handle_record_not_found_exception, handle_record_not_saved_exception
 from organization.models import OrganizationManager
 import wevote_functions.admin
@@ -90,7 +90,7 @@ class FollowOrganizationManager(models.Model):
                 follow_organization_on_stage_id = follow_organization_on_stage.id
                 follow_organization_on_stage_found = True
             except Exception as e:
-                handle_record_not_saved_exception(e)
+                handle_record_not_saved_exception(e, logger=logger)
 
         elif results['MultipleObjectsReturned']:
             logger.warn("follow_organization: delete all but one and take it over?")
@@ -112,7 +112,7 @@ class FollowOrganizationManager(models.Model):
                     follow_organization_on_stage_id = follow_organization_on_stage.id
                     follow_organization_on_stage_found = True
             except Exception as e:
-                handle_record_not_saved_exception(e)
+                handle_record_not_saved_exception(e, logger=logger)
 
         results = {
             'success':                      True if follow_organization_on_stage_found else False,
@@ -138,11 +138,10 @@ class FollowOrganizationManager(models.Model):
                     voter_id=voter_id, organization_id=organization_id)
                 follow_organization_on_stage_id = follow_organization_on_stage.id
         except FollowOrganization.MultipleObjectsReturned as e:
-            handle_record_found_more_than_one_exception(e)
+            handle_record_found_more_than_one_exception(e, logger=logger)
             error_result = True
             exception_multiple_object_returned = True
         except FollowOrganization.DoesNotExist as e:
-            handle_exception_silently(e)
             error_result = True
             exception_does_not_exist = True
 
@@ -177,7 +176,7 @@ class FollowOrganizationList(models.Model):
             if len(follow_organization_list):
                 follow_organization_list_found = True
         except Exception as e:
-            handle_record_not_found_exception(e)
+            handle_record_not_found_exception(e, logger=logger)
 
         if follow_organization_list_found:
             return follow_organization_list
@@ -205,7 +204,7 @@ class FollowOrganizationList(models.Model):
             if len(follow_organization_list):
                 follow_organization_list_found = True
         except Exception as e:
-            handle_record_not_found_exception(e)
+            handle_record_not_found_exception(e, logger=logger)
 
         if follow_organization_list_found:
             return follow_organization_list
