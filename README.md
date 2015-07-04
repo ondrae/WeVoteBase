@@ -99,6 +99,25 @@ wevotebase/settings.py (Also see "Heroku Configuration" below)
 createdb WeVoteDB
 ```
 
+In wevotebase/settings.py, there is a LOG_FILE setting that you can use. If you want to use a log file instead of in the
+command line, create a file at the location specified by LOG_FILE (By default: LOG_FILE = "/var/log/wevote/wevote.log"),
+and make sure it can be written to:
+ 
+```bash
+mkdir /var/log/wevote/
+touch /var/log/wevote/wevote.log
+chmod -R 0777 /var/log/wevote/
+```
+
+As configured in github, only errors get written to the log. 
+Logging has five levels: CRITICAL, ERROR, INFO, WARN, DEBUG. 
+It works as a hierarchy (i.e. INFO picks up all messages logged as INFO, ERROR and CRITICAL), and when logging we 
+specify the level assigned to each message. You can change this to info items by changing this:
+
+```bash
+LOG_FILE_LEVEL = logging.INFO
+```
+
 Populate your database with the latest database tables:
 
 ```bash

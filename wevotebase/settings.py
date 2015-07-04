@@ -217,7 +217,7 @@ BOOTSTRAP3 = {
     'success_css_class': 'has-success',
 
     # Renderers (only set these if you have studied the source and understand the inner workings)
-    'formset_renderers':{
+    'formset_renderers': {
         'default': 'bootstrap3.renderers.FormsetRenderer',
     },
     'form_renderers': {
@@ -248,20 +248,20 @@ SOCIAL_AUTH_PIPELINE = (
     'social.pipeline.user.user_details'
 )
 
-########### Logging configurations ###########
-#   LOG_STREAM          Boolean     True will turn on stream handler.
+# ########## Logging configurations ###########
+#   LOG_STREAM          Boolean     True will turn on stream handler and write to command line.
 #   LOG_FILE            String      Path to file to write to. Make sure executing
 #                                   user has permissions.
-#   LOG_STREAM_LEVEL    Integer     Log level of stream handler.
-#   LOG_FILE_LEVEL      Integer     Log level of file handler.
+#   LOG_STREAM_LEVEL    Integer     Log level of stream handler: CRITICAL, ERROR, INFO, WARN, DEBUG
+#   LOG_FILE_LEVEL      Integer     Log level of file handler: CRITICAL, ERROR, INFO, WARN, DEBUG
 
 LOG_STREAM = True
 LOG_FILE = None
-#LOG_FILE = "/var/log/wevote/wevote.log"
-LOG_STREAM_LEVEL = logging.INFO
+# LOG_FILE = "/var/log/wevote/wevote.log"
+LOG_STREAM_LEVEL = logging.DEBUG
 LOG_FILE_LEVEL = logging.ERROR
 
-########### Heroku Settings ###########
+# ########## Heroku Settings ###########
 # Comment out to run database locally
 
 # #Parse database configuration from $DATABASE_URL
