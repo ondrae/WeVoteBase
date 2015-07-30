@@ -45,14 +45,18 @@ https://groups.google.com/forum/#!forum/electiondata
 
 ### Setup - Dependencies
 
-NOTE: We are running Django version 1.7 and if you are running Django version 1.8 you will encounter problems with the current code base.
-NOTE: We are running Python version 
+NOTE: We are running Django version 1.8
+NOTE: We are running Python version 2.7.6
 
 Once you have cloned this repository to your local machine, set up a virtual environment:
 
     cd /path_to_dev_environment/wevotebase/
     virtualenv venv
     source venv/bin/activate
+    
+We recommend:
+
+    pip install django-toolbelt
 
 Now that your virtualenv is running:
 
@@ -63,7 +67,17 @@ pip install -r requirements.txt
 
 ### Setup - Install the Postgres database
 
-TODO: These Postgres installation instructions need to be verified.
+#### METHOD 1
+http://postgresapp.com/
+
+export PATH=$PATH:/Applications/Postgres.app/Contents/Versions/9.4/bin
+
+Start up the command line for postgres. Run these commands:
+
+    create role postgres;
+    alter role postgres with login;
+
+#### METHOD 2
 
 Install Postgres: 
 
@@ -73,6 +87,33 @@ Install Postgres:
 Next, follow these instructions:
 
     http://gknauth.blogspot.com/2014/01/postgresql-93-setup-after-initial.html
+
+#### FINALLY
+
+We also recommend installing pgAdmin3 as a WYSIWYG database administration tool.
+NOTE: You may need to turn off the restriction in "Security & Privacy" on "unidentified developers"
+to allow this tool to be installed.
+
+In pgadmin add a server (you can use your sign in name as the server name.
+
+
+
+### Setup - Local Configuration
+
+Change your local database configuration settings in (Search for "DATABASES") if you so desire:
+
+wevotebase/settings.py (Also see "Heroku Configuration" below)
+
+```bash
+createdb WeVoteDB
+```
+
+Populate your database with the latest database tables:
+
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
 
 Create the initial database:
 
@@ -86,27 +127,14 @@ If you are not prompted to create a superuser, run the following command:
 python manage.py createsuperuser
 ```
 
-We also recommend installing pgAdmin3 as a WYSIWYG database administration tool.
-
-
-### Setup - Local Configuration
-
-Change your local database configuration settings in (Search for "DATABASES") if you so desire:
-
-wevotebase/settings.py (Also see "Heroku Configuration" below)
-
-```bash
-createdb WeVoteDB
-```
-
 In wevotebase/settings.py, there is a LOG_FILE setting that you can use. If you want to use a log file instead of in the
 command line, create a file at the location specified by LOG_FILE (By default: LOG_FILE = "/var/log/wevote/wevote.log"),
 and make sure it can be written to:
  
 ```bash
-mkdir /var/log/wevote/
-touch /var/log/wevote/wevote.log
-chmod -R 0777 /var/log/wevote/
+sudo mkdir /var/log/wevote/
+sudo touch /var/log/wevote/wevote.log
+sudo chmod -R 0777 /var/log/wevote/
 ```
 
 As configured in github, only errors get written to the log. 
@@ -116,13 +144,6 @@ specify the level assigned to each message. You can change this to info items by
 
 ```bash
 LOG_FILE_LEVEL = logging.INFO
-```
-
-Populate your database with the latest database tables:
-
-```bash
-python manage.py makemigrations
-python manage.py migrate
 ```
 
 Add the following to your local environment if you are going to connect to Google Civic API:
@@ -153,13 +174,13 @@ In the wevotebase/setting.py file, search for "Heroku". There are comments that 
 
 Start up the webserver:
 
-```bash
+```
 python manage.py runserver
 ```
 
 Open your browser to login to the admin account:
 
-    $ xdg-open http://localhost:8000/admin/login/?next=/admin/
+    http://localhost:8000/admin/login/?next=/admin/
 
 Visit the site here: 
 
