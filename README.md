@@ -92,10 +92,10 @@ Next, follow these instructions:
 
 We also recommend installing pgAdmin3 as a WYSIWYG database administration tool.
 NOTE: You may need to turn off the restriction in "Security & Privacy" on "unidentified developers"
-to allow this tool to be installed.
+to allow this tool to be installed. 
+See: http://blog.tcs.de/program-cant-be-opened-because-it-is-from-an-unidentified-developer/
 
-In pgadmin add a server (you can use your sign in name as the server name.
-
+In pgadmin add a server. You can use your sign in name as the server name.
 
 
 ### Setup - Local Configuration
