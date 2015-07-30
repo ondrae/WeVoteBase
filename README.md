@@ -27,8 +27,8 @@ Our approach is to write importers that take data from these sources into a loca
 
 ### Live Demo
 
-You can see a live demo for a San Francisco ballot here: 
-http://my.wevoteeducation.org/
+You can see our current wireframe mockup for a San Francisco ballot here: 
+http://my.wevoteusa.org/
 
 ### Join Us - Contributing to We Vote Base
 Please reach out to us if you would like to help or have any questions: 
@@ -54,25 +54,24 @@ Once you have cloned this repository to your local machine, set up a virtual env
     virtualenv venv
     source venv/bin/activate
     
-We recommend:
+We recommend running this within your virtual environment:
 
     pip install django-toolbelt
+    pip install --upgrade pip
+    pip install -r requirements.txt
 
-Now that your virtualenv is running:
-
-```bash
-pip install --upgrade pip
-pip install -r requirements.txt
-```
 
 ### Setup - Install the Postgres database
 
 #### METHOD 1
-http://postgresapp.com/
+For Mac, download the DMG from http://postgresapp.com/
 
-export PATH=$PATH:/Applications/Postgres.app/Contents/Versions/9.4/bin
+Run this on your command line:
 
-Start up the command line for postgres. Run these commands:
+    export PATH=$PATH:/Applications/Postgres.app/Contents/Versions/9.4/bin
+
+Start up the command line for postgres (there is an 'open psql' button/navigation item if you installed postgresapp. 
+Run these commands:
 
     create role postgres;
     alter role postgres with login;
@@ -104,16 +103,12 @@ Change your local database configuration settings in (Search for "DATABASES") if
 
 wevotebase/settings.py (Also see "Heroku Configuration" below)
 
-```bash
-createdb WeVoteDB
-```
+    createdb WeVoteDB
 
 Populate your database with the latest database tables:
 
-```bash
-python manage.py makemigrations
-python manage.py migrate
-```
+    python manage.py makemigrations
+    python manage.py migrate
 
 Create the initial database:
 
@@ -123,34 +118,26 @@ When prompted for a super user, enter your email address and a simple password. 
 
 If you are not prompted to create a superuser, run the following command:
 
-```bash
-python manage.py createsuperuser
-```
+    python manage.py createsuperuser
 
 In wevotebase/settings.py, there is a LOG_FILE setting that you can use. If you want to use a log file instead of in the
 command line, create a file at the location specified by LOG_FILE (By default: LOG_FILE = "/var/log/wevote/wevote.log"),
 and make sure it can be written to:
  
-```bash
-sudo mkdir /var/log/wevote/
-sudo touch /var/log/wevote/wevote.log
-sudo chmod -R 0777 /var/log/wevote/
-```
+    sudo mkdir /var/log/wevote/
+    sudo touch /var/log/wevote/wevote.log
+    sudo chmod -R 0777 /var/log/wevote/
 
 As configured in github, only errors get written to the log. 
 Logging has five levels: CRITICAL, ERROR, INFO, WARN, DEBUG. 
 It works as a hierarchy (i.e. INFO picks up all messages logged as INFO, ERROR and CRITICAL), and when logging we 
 specify the level assigned to each message. You can change this to info items by changing this:
 
-```bash
-LOG_FILE_LEVEL = logging.INFO
-```
+    LOG_FILE_LEVEL = logging.INFO
 
 Add the following to your local environment if you are going to connect to Google Civic API:
 
-```bash
-export GOOGLE_CIVIC_API_KEY=<YOUR KEY HERE>
-```
+    export GOOGLE_CIVIC_API_KEY=<YOUR KEY HERE>
 
 Add the following new apps to the wevotebase/settings.py file, above ux_oak:
 
@@ -174,11 +161,9 @@ In the wevotebase/setting.py file, search for "Heroku". There are comments that 
 
 Start up the webserver:
 
-```
-python manage.py runserver
-```
+    python manage.py runserver
 
-Open your browser to login to the admin account:
+Open your browser to login to the admin account so you can have access to the import_export tools:
 
     http://localhost:8000/admin/login/?next=/admin/
 
