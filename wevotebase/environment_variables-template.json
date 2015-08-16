@@ -1,4 +1,13 @@
 {
+  "_comment":                       "local.py settings, including database",
+  "DATABASE_ENGINE":                "django.db.backends.postgresql_psycopg2",
+  "DATABASE_NAME":                  "WeVoteDB",
+  "DATABASE_USER":                  "postgres",
+  "DATABASE_PASSWORD":              "",
+  "DATABASE_HOST":                  "",
+  "DATABASE_PORT":                  "",
+  "LOG_FILE":                       "/var/log/wevote/wevote.log",
+
   "_comment":                       "import_export_google_civic",
   "GOOGLE_CIVIC_API_KEY":           "",
   "VOTER_INFO_URL":                 "https://www.googleapis.com/civicinfo/v2/voterinfo",
