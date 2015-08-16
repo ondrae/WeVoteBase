@@ -68,11 +68,9 @@ import urllib
 import urlparse
 
 from django.core.management.base import BaseCommand, CommandError
+from django.conf import settings
 
-import geoip_utils
-
-download_folder = geoip_utils.where()
-
+download_folder = settings.GEOIP_PATH
 
 class Command(BaseCommand):
     help = 'Updates GeoIP data in %s' % download_folder
