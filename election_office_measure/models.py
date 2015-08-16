@@ -4,8 +4,6 @@
 
 from django.db import models
 from exception.models import handle_record_found_more_than_one_exception
-from politician.models import PoliticianManager
-import re  # Reg ex
 from wevote_settings.models import fetch_next_id_we_vote_last_candidate_campaign_integer, \
     fetch_next_id_we_vote_last_contest_measure_integer, fetch_next_id_we_vote_last_contest_office_integer, \
     fetch_next_id_we_vote_last_measure_campaign_integer, fetch_site_unique_id_prefix

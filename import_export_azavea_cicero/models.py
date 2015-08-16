@@ -4,7 +4,7 @@
 
 import wevote_functions.admin
 
-from django.db import models
+# from django.db import models
 
 
 logger = wevote_functions.admin.get_logger(__name__)

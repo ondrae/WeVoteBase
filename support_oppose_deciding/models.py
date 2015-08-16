@@ -2,6 +2,6 @@
 # Brought to you by We Vote. Be good.
 # -*- coding: UTF-8 -*-
 
-from django.db import models
+# from django.db import models
 
 # Create your models here.

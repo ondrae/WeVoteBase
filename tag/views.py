@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
 from django.shortcuts import render
 
-from tag.models import Tag
+from .models import Tag
 
 
 def tag_list_view(request):  # , politician_id

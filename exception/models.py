@@ -11,7 +11,7 @@ default_logger = wevote_functions.admin.get_logger(__name__)
 
 def _log_exception(exception_message, logger, e):
     """Log an exception with a custom message."""
-    if logger == None:
+    if logger is None:
         logger = default_logger
 
     caller_frame_record = inspect.stack()[1]

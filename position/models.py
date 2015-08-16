@@ -5,7 +5,7 @@
 
 from django.db import models
 from election_office_measure.models import CandidateCampaign, MeasureCampaign
-from exception.models import handle_exception, handle_record_found_more_than_one_exception,\
+from exception.models import handle_record_found_more_than_one_exception,\
     handle_record_not_found_exception, handle_record_not_saved_exception
 from organization.models import Organization
 from twitter.models import TwitterUser
@@ -170,7 +170,7 @@ class PositionEntered(models.Model):
             handle_record_found_more_than_one_exception(e, logger=logger)
             logger.error("position.candidate_campaign Found multiple")
             return
-        except CandidateCampaign.DoesNotExist as e:
+        except CandidateCampaign.DoesNotExist:
             logger.error("position.candidate_campaign did not find")
             return
         return candidate_campaign
@@ -182,7 +182,7 @@ class PositionEntered(models.Model):
             handle_record_found_more_than_one_exception(e, logger=logger)
             logger.error("position.candidate_campaign Found multiple")
             return
-        except Organization.DoesNotExist as e:
+        except Organization.DoesNotExist:
             logger.error("position.candidate_campaign did not find")
             return
         return organization
@@ -192,7 +192,7 @@ class PositionEntered(models.Model):
             organization_on_stage = Organization.objects.get(id=self.organization_id)
             if organization_on_stage.id_we_vote:
                 return organization_on_stage.id_we_vote
-        except Exception as e:
+        except StandardError:
             pass
         return ''
 
@@ -201,7 +201,7 @@ class PositionEntered(models.Model):
             candidate_campaign_on_stage = CandidateCampaign.objects.get(id=self.candidate_campaign_id)
             if candidate_campaign_on_stage.id_we_vote:
                 return candidate_campaign_on_stage.id_we_vote
-        except Exception as e:
+        except StandardError:
             pass
         return ''
 
@@ -210,7 +210,7 @@ class PositionEntered(models.Model):
             measure_campaign_on_stage = Organization.objects.get(id=self.measure_campaign_id)
             if measure_campaign_on_stage.id_we_vote:
                 return measure_campaign_on_stage.id_we_vote
-        except Exception as e:
+        except StandardError:
             pass
         return ''
 
@@ -410,7 +410,7 @@ class PositionEnteredManager(models.Model):
             handle_record_found_more_than_one_exception(e, logger=logger)
             error_result = True
             exception_multiple_object_returned = True
-        except PositionEntered.DoesNotExist as e:
+        except PositionEntered.DoesNotExist:
             error_result = True
             exception_does_not_exist = True
 
@@ -458,6 +458,7 @@ class PositionEnteredManager(models.Model):
         position_entered_manager = PositionEnteredManager()
         results = position_entered_manager.retrieve_voter_candidate_campaign_position(voter_id, candidate_campaign_id)
 
+        voter_position_on_stage = PositionEntered()
         voter_position_on_stage_found = False
         position_id = 0
         if results['position_found']:
