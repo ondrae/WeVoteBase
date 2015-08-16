@@ -107,6 +107,7 @@ Thumbs.db
 .idea
 migrations/
 !migrations/__init__.py
+/geo/data/
 
 # Heroku Related #
 ##################
