@@ -9,18 +9,17 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
 from election_office_measure.models import CandidateCampaign, CandidateCampaignManager, ContestMeasure, ContestOffice, \
     MeasureCampaign
-from exception.models import handle_exception, handle_record_not_found_exception, handle_record_not_saved_exception
-from import_export.models import transfer_google_civic_voterinfo_cached_data_to_wevote_tables, \
-    transfer_theunitedstatesio_cached_data_to_wevote_tables, import_we_vote_organizations_from_json, \
+from exception.models import handle_record_not_saved_exception
+from .controllers import transfer_google_civic_voterinfo_cached_data_to_wevote_tables
+from .models import transfer_theunitedstatesio_cached_data_to_wevote_tables, import_we_vote_organizations_from_json, \
     import_we_vote_candidate_campaigns_from_json, import_we_vote_positions_from_json
 from import_export_maplight.models import MapLightCandidate
-from import_export.serializers import CandidateCampaignSerializer, OrganizationSerializer, PositionSerializer
+from .serializers import CandidateCampaignSerializer, OrganizationSerializer, PositionSerializer
 from organization.models import Organization
 from politician.models import Politician
 from position.models import PositionEntered
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
 import wevote_functions.admin
 from wevote_functions.models import value_exists
 
@@ -134,6 +133,11 @@ class ExportPositionDataToJson(APIView):
         return Response(serializer.data)
 
 
+# TODO DALE This view is giving us this error:
+# ValueError at /import_export/import_sample_positions/
+# Not all temporary messages could be stored.
+# Request Method:	GET
+# Request URL:	http://localhost:8000/import_export/import_sample_positions/
 def import_we_vote_sample_positions_data_from_json(request):
     """
     This gives us sample organizations, candidate campaigns, and positions for testing
@@ -205,7 +209,8 @@ def transfer_maplight_data_to_we_vote_tables(request):
                     one_mapping_google_civic_name = ''
                     for one_mapping_found in politician_name_mapping_list:
                         if value_exists(one_mapping_found['maplight_display_name']) \
-                                and one_mapping_found['maplight_display_name'] == one_candidate_from_maplight_table.display_name:
+                                and one_mapping_found['maplight_display_name'] == \
+                                one_candidate_from_maplight_table.display_name:
                             one_mapping_google_civic_name = one_mapping_found['google_civic_name']
                             break
                     if value_exists(one_mapping_google_civic_name):

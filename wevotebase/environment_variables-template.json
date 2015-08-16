@@ -8,11 +8,6 @@
   "DATABASE_PORT":                  "",
   "LOG_FILE":                       "/var/log/wevote/wevote.log",
 
-  "_comment":                       "import_export_google_civic",
-  "GOOGLE_CIVIC_API_KEY":           "",
-  "VOTER_INFO_URL":                 "https://www.googleapis.com/civicinfo/v2/voterinfo",
-  "VOTER_INFO_JSON_FILE":           "import_export_google_civic/import_data/voterinfo_sample.json",
-
   "_comment":                       "import_export",
   "WE_VOTE_API_KEY":                "",
   "ORGANIZATIONS_URL":              "http://my.wevoteeducation.org/import_export/organizations/?format=json",
@@ -21,6 +16,17 @@
   "CANDIDATE_CAMPAIGNS_JSON_FILE":  "import_export/import_data/candidate_campaigns_sample.json",
   "POSITIONS_URL":                  "http://my.wevoteeducation.org/import_export/positions/?format=json",
   "POSITIONS_JSON_FILE":            "import_export/import_data/positions_sample.json",
+
+  "_comment":                       "import_export_google_civic",
+  "GOOGLE_CIVIC_API_KEY":           "",
+  "VOTER_INFO_URL":                 "https://www.googleapis.com/civicinfo/v2/voterinfo",
+  "VOTER_INFO_JSON_FILE":           "import_export_google_civic/import_data/voterinfo_sample.json",
+
+  "_comment":                       "import_export_theunitedstatesio",
+  "LEGISLATORS_CURRENT_CSV_FILE":   "import_export_theunitedstatesio/import_data/legislators-current.csv",
+
+  "_comment":                       "import_export_voting_info_project",
+  "VOTING_INFO_PROJECT_SAMPLE_XML_FILE": "import_export_voting_info_project/import_data/sample_feed.xml",
 
   "SOCIAL_AUTH_FACEBOOK_KEY":       "",
   "SOCIAL_AUTH_FACEBOOK_SECRET":    "",

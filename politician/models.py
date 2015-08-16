@@ -126,6 +126,10 @@ class Politician(models.Model):
 
 
 class PoliticianManager(models.Model):
+    def __init__(self):
+        # TODO Recommend by Hy Carrel
+        pass
+
     def fetch_photo_url(self, politician_id):
         politician_manager = PoliticianManager()
         results = politician_manager.retrieve_politician(politician_id)
@@ -156,6 +160,7 @@ class PoliticianManager(models.Model):
             error_result = True
             exception_does_not_exist = True
 
+        # politician_on_stage_found2 = politician_on_stage_id > 0  # TODO Why not this simpler case?
         politician_on_stage_found = True if politician_on_stage_id > 0 else False
         results = {
             'success':                      True if politician_on_stage_found else False,

@@ -11,8 +11,8 @@ from django.views import generic
 from django.views.generic import TemplateView
 from django.utils import timezone
 
-from politician.forms import TagNewForm
-from politician.models import Politician, PoliticianTagLink
+from .forms import TagNewForm
+from .models import Politician, PoliticianTagLink
 from tag.models import Tag
 
 

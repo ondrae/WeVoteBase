@@ -5,8 +5,8 @@
 from django.shortcuts import redirect, render
 from django.views import generic
 
-from import_export_theunitedstatesio.models import TheUnitedStatesIoLegislatorCurrent
-from import_export_theunitedstatesio.models import import_legislators_current_csv
+from .models import TheUnitedStatesIoLegislatorCurrent
+from .controllers import import_legislators_current_csv
 
 
 def import_theunitedstatesio_from_csv_view(request):

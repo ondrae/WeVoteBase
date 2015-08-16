@@ -232,6 +232,7 @@ class CandidateCampaign(models.Model):
             self.id_maplight = None
         super(CandidateCampaign, self).save(*args, **kwargs)
 
+
 #
 def mimic_google_civic_initials(name):
     modified_name = name.replace(' A ', ' A. ')
@@ -261,6 +262,7 @@ def mimic_google_civic_initials(name):
     modified_name = modified_name.replace(' Y ', ' Y. ')
     modified_name = modified_name.replace(' Z ', ' Z. ')
     return modified_name
+
 
 class CandidateCampaignManager(models.Model):
 
