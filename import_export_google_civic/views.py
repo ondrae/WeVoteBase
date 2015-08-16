@@ -3,7 +3,7 @@
 # -*- coding: UTF-8 -*-
 
 from django.shortcuts import redirect, render
-from import_export_google_civic.models import import_voterinfo_from_json
+from import_export_google_civic.controllers import import_voterinfo_from_json
 
 
 def import_voterinfo_from_json_view(request):
