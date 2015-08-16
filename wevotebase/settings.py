@@ -88,6 +88,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'geo.middleware.request.LocationMiddleware',
     'wevote_social.middleware.SocialMiddleware',
 )
 
@@ -249,7 +250,11 @@ SOCIAL_AUTH_PIPELINE = (
     'social.pipeline.user.user_details'
 )
 
+# Using conventions from django.contrib:
+# https://docs.djangoproject.com/en/1.8/ref/contrib/gis/geoip/#geoip-settings
 GEOIP_PATH=os.path.join(BASE_DIR, 'geo', 'data')
+GEOIP_COUNTRY='GeoIP.dat'
+GEOIP_CITY='GeoLiteCity.dat'
 
 # ########## Logging configurations ###########
 #   LOG_STREAM          Boolean     True will turn on stream handler and write to command line.
