@@ -107,6 +107,7 @@ Thumbs.db
 .idea
 migrations/
 !migrations/__init__.py
+wevotebase/environment_variables.json
 
 # Heroku Related #
 ##################

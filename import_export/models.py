@@ -17,6 +17,7 @@ import os  # Needed to get WE_VOTE_API_KEY from an environment variable
 from politician.models import Politician
 from position.models import PositionEntered
 import requests
+from wevotebase.base import get_environment_variable
 import wevote_functions.admin
 from wevote_functions.models import value_exists
 
@@ -678,17 +679,13 @@ def google_civic_get_or_create_politician(google_civic_candidate_campaign_entry)
     }
     return results
 
-# Set your environment variable with: export WE_VOTE_API_KEY=<API KEY HERE>
-if 'WE_VOTE_API_KEY' in os.environ:
-    WE_VOTE_API_KEY = os.environ['WE_VOTE_API_KEY']
-else:
-    WE_VOTE_API_KEY = ''
-ORGANIZATIONS_URL = "http://my.wevoteeducation.org/import_export/organizations/?format=json"
-ORGANIZATIONS_JSON_FILE = 'import_export/import_data/organizations_sample.json'
-CANDIDATE_CAMPAIGNS_URL = "http://my.wevoteeducation.org/import_export/candidate_campaigns/?format=json"
-CANDIDATE_CAMPAIGNS_JSON_FILE = 'import_export/import_data/candidate_campaigns_sample.json'
-POSITIONS_URL = "http://my.wevoteeducation.org/import_export/positions/?format=json"
-POSITIONS_JSON_FILE = 'import_export/import_data/positions_sample.json'
+WE_VOTE_API_KEY = get_environment_variable("WE_VOTE_API_KEY")
+ORGANIZATIONS_URL = get_environment_variable("ORGANIZATIONS_URL")
+ORGANIZATIONS_JSON_FILE = get_environment_variable("ORGANIZATIONS_JSON_FILE")
+CANDIDATE_CAMPAIGNS_URL = get_environment_variable("CANDIDATE_CAMPAIGNS_URL")
+CANDIDATE_CAMPAIGNS_JSON_FILE = get_environment_variable("CANDIDATE_CAMPAIGNS_JSON_FILE")
+POSITIONS_URL = get_environment_variable("POSITIONS_URL")
+POSITIONS_JSON_FILE = get_environment_variable("POSITIONS_JSON_FILE")
 
 
 # TODO DALE Get this working
