@@ -97,11 +97,40 @@ See: http://blog.tcs.de/program-cant-be-opened-because-it-is-from-an-unidentifie
 In pgadmin add a server. You can use your sign in name as the server name.
 
 
-### Setup - Local Configuration
+### Setup - Environment Variables Configuration - wevotebase/environment_variables.json
 
-Change your local database configuration settings in (Search for "DATABASES") if you so desire:
+WeVoteBase is currently configured (in manage.py) to look for a "wevotebase/local.py" file (configured in the 
+"wevotebase/settings.py" file). When we run this on a production server, we will startup with a production settings
+file like "production_heroku.py".
 
-wevotebase/settings.py (Also see "Heroku Configuration" below)
+Copy "environment_variables-template.json" to "environment_variables.json". You will configure many variables for your 
+local environment in this file. New variables needed by WeVoteBase will be added to 
+"environment_variables-template.json" from time to time, so please check for updates by comparing your local version 
+with the template file.
+
+#### LOG_FILE
+Create a file on your computer to match the one expected in the environment_variables.json file:
+ 
+    sudo mkdir /var/log/wevote/
+    sudo touch /var/log/wevote/wevote.log
+    sudo chmod -R 0777 /var/log/wevote/
+
+As configured in github, only errors get written to the log. 
+Logging has five levels: CRITICAL, ERROR, INFO, WARN, DEBUG. 
+It works as a hierarchy (i.e. INFO picks up all messages logged as INFO, ERROR and CRITICAL), and when logging we 
+specify the level assigned to each message. You can change this to info items by changing this:
+
+    LOG_FILE_LEVEL = logging.INFO
+
+#### GOOGLE_CIVIC_API_KEY
+If you are going to connect to Google Civic API, add your key to this variable.
+TODO: Describe the process of getting a Google Civic API Key
+
+
+### Setup - Database Creation
+
+If you would like to match the local database settings from the "wevotebase/environment_variables.json" file,
+(Search for "DATABASES"):
 
     createdb WeVoteDB
 
@@ -119,36 +148,6 @@ When prompted for a super user, enter your email address and a simple password. 
 If you are not prompted to create a superuser, run the following command:
 
     python manage.py createsuperuser
-
-In wevotebase/settings.py, there is a LOG_FILE setting that you can use. If you want to use a log file instead of in the
-command line, create a file at the location specified by LOG_FILE (By default: LOG_FILE = "/var/log/wevote/wevote.log"),
-and make sure it can be written to:
- 
-    sudo mkdir /var/log/wevote/
-    sudo touch /var/log/wevote/wevote.log
-    sudo chmod -R 0777 /var/log/wevote/
-
-As configured in github, only errors get written to the log. 
-Logging has five levels: CRITICAL, ERROR, INFO, WARN, DEBUG. 
-It works as a hierarchy (i.e. INFO picks up all messages logged as INFO, ERROR and CRITICAL), and when logging we 
-specify the level assigned to each message. You can change this to info items by changing this:
-
-    LOG_FILE_LEVEL = logging.INFO
-
-Add the following to your local environment if you are going to connect to Google Civic API:
-
-    export GOOGLE_CIVIC_API_KEY=<YOUR KEY HERE>
-
-Add the following new apps to the wevotebase/settings.py file, above ux_oak:
-
-    ux_birch
-
-TODO: We need to upgrade the way we deal with wevotebase/settings.py, since currently the new apps aren't getting woven back into the current settings.py file.
-Possibilities: 
-
-    http://stackoverflow.com/questions/1626326/how-to-manage-local-vs-production-settings-in-django
-    https://code.djangoproject.com/wiki/SplitSettings
-    http://www.rdegges.com/the-perfect-django-settings-file/
 
 ### Setup - Heroku Configuration
 
