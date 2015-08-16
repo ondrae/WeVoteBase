@@ -22,6 +22,7 @@ We will be importing data from many sources, including:
 * Twitter
 * Facebook
 * See http://www.ElectionDataSummary.org for links to a variety of election data sources we are exploring
+* [MaxMind GeoIP](https://www.maxmind.com/en/home)
 
 Our approach is to write importers that take data from these sources into a local database, and then merge that data into a We Vote database structure so we can deliver a complete ballot to any American voter. 
 
@@ -114,6 +115,10 @@ Create the initial database:
 
     $ python manage.py syncdb
 
+Import GeoIP data:
+
+    $ python manage.py update_geoip_data
+
 When prompted for a super user, enter your email address and a simple password. This admin account is only used in development.
 
 If you are not prompted to create a superuser, run the following command:
@@ -184,4 +189,4 @@ Please use descriptive full word variable names.
 * In the lifecycle of most projects, fixing bugs and maintaining current features end up taking 50%+ of total engineering time.
 * Our goal is to create a code base that is easy to understand, making fixing bugs and maintaining current features as painless as possible. We will have many engineers working with this code, and we want to be welcoming to engineers who are new to the project.
 * Short variable names can often create confusion, where a new engineer needs to spend time figuring out what a short variable name actually means. (Ex/ “per” or “p” instead of “person”.) For this project please use descriptive full word variable names.
-* Fellow engineers should be able to zoom around the code and not get stopped with riddles created by short names.  
+* Fellow engineers should be able to zoom around the code and not get stopped with riddles created by short names.    

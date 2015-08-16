@@ -54,6 +54,7 @@ INSTALLED_APPS = (
     'election_office_measure',
     'exception',
     'follow',
+    'geo',
     'import_export',
     'import_export_azavea_cicero',
     'import_export_google_civic',
@@ -247,6 +248,8 @@ SOCIAL_AUTH_PIPELINE = (
     'social.pipeline.social_auth.load_extra_data',
     'social.pipeline.user.user_details'
 )
+
+GEOIP_PATH=os.path.join(BASE_DIR, 'geo', 'data')
 
 # ########## Logging configurations ###########
 #   LOG_STREAM          Boolean     True will turn on stream handler and write to command line.
