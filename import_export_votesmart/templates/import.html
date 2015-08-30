@@ -1,0 +1,18 @@
+{% load staticfiles %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'import_export_votesmart/style.css' %}" />
+<h1>States Imported from the VoteSmart Data Set, and cached in local db</h1>
+<p>This data has not been transferred to the We Vote tables that are in use.</p>
+
+{% if state_list %}
+    <ol>
+    {% for state in state_list %}
+        <li><a href="{% url 'import_export_votesmart:statedetailview' state.stateId %}">{{ state.stateId }} {{ state.name }}</a></li>
+    {% endfor %}
+    </ol>
+{% else %}
+    <p>No states are available.</p>
+{% endif %}
+
+<br />
+<a href="{% url 'import_export:import_export_index'%}">back to index</a>

@@ -34,5 +34,8 @@
   "SOCIAL_AUTH_TWITTER_SECRET":     "",
   "SECRET_KEY":                     "(-ack%@p)$dpr-4*q$a@ir%64(_(q6!ve@=r&5i*@-fw6bjnqq",
 
+  "_comment":                       "import_export_votesmart",
+  "VOTESMART_API_KEY":              "",
+
   "_comment":                       "End of json_environment_variables.json"
 }
