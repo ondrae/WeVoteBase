@@ -6,7 +6,16 @@
   "DATABASE_PASSWORD":              "",
   "DATABASE_HOST":                  "",
   "DATABASE_PORT":                  "",
+
+  "_comment":                       "These are the levels of logging available: CRITICAL, ERROR, INFO, WARN, DEBUG",
+  "_comment":                       "*** LOG_STREAM turns on or off the messages to the command line: true or false",
+  "LOG_STREAM":                     true,
+  "_comment":                       "*** LOG_STREAM_LEVEL is the level of logging printed to the command line",
+  "LOG_STREAM_LEVEL":               "DEBUG",
+  "_comment":                       "*** LOG_FILE is the location on the disk of the log file",
   "LOG_FILE":                       "/var/log/wevote/wevote.log",
+  "_comment":                       "*** LOG_FILE_LEVEL is the level of logging written to the log file",
+  "LOG_FILE_LEVEL":                 "ERROR",
 
   "_comment":                       "import_export",
   "WE_VOTE_API_KEY":                "",

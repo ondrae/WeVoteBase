@@ -6,6 +6,9 @@ import json
 import logging
 import os
 from django.core.exceptions import ImproperlyConfigured
+# Consider switching to the way that Two Scoops of Django 1.8 suggests file path handling, section 5.6
+# from unipath import Path
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # Override in local.py for development
@@ -17,8 +20,7 @@ try:
     with open("wevotebase/environment_variables.json") as f:
         json_environment_variables = json.loads(f.read())
 except StandardError as e:
-    print "environment_variables.json missing"
-    # TODO USE logger here # logger.info("")
+    print "base.py: environment_variables.json missing"  # Can't use logger in the settings file due to loading sequence
 
 
 def get_environment_variable(var_name, json_environment_vars=json_environment_variables):
@@ -30,19 +32,20 @@ def get_environment_variable(var_name, json_environment_vars=json_environment_va
         return json_environment_vars[var_name]  # Loaded from array above
     except KeyError:
         # variable wasn't found in the JSON environment variables file, so now look in the server environment variables
-        print "failed to load {} from JSON file".format(var_name)  # TODO Convert to use logger
+        print "base.py: failed to load {} from JSON file".format(var_name)  # Can't use logger in the settings file
 
     try:
         # Environment variables can be set with this for example: export GOOGLE_CIVIC_API_KEY=<API KEY HERE>
         return os.environ[var_name]
     except KeyError:
-        # TODO DALE Probably should also log this with logger
+        # Can't use logger in the settings file due to loading sequence
         error_msg = "Unable to set the {} variable from os.environ or JSON file".format(var_name)
         raise ImproperlyConfigured(error_msg)
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+# Consider switching to the way that Two Scoops of Django 1.8 suggests file path handling, section 5.6
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = get_environment_variable("SECRET_KEY")
@@ -243,14 +246,51 @@ SOCIAL_AUTH_PIPELINE = (
     'social.pipeline.user.user_details'
 )
 
+
 # ########## Logging configurations ###########
 #   LOG_STREAM          Boolean     True will turn on stream handler and write to command line.
 #   LOG_FILE            String      Path to file to write to. Make sure executing
 #                                   user has permissions.
 #   LOG_STREAM_LEVEL    Integer     Log level of stream handler: CRITICAL, ERROR, INFO, WARN, DEBUG
 #   LOG_FILE_LEVEL      Integer     Log level of file handler: CRITICAL, ERROR, INFO, WARN, DEBUG
-#   NOTE: These should be overwritten in the local.py file
-LOG_STREAM = True
-LOG_FILE = None
-LOG_STREAM_LEVEL = logging.DEBUG
-LOG_FILE_LEVEL = logging.ERROR
+#   NOTE: These should be set in the environment_variables.json file
+def convert_logging_level(log_level_text_descriptor):
+    import logging
+    # Assume error checking has been done and that the string is a valid logging level
+    if log_level_text_descriptor == "CRITICAL":
+        return logging.CRITICAL
+    if log_level_text_descriptor == "ERROR":
+        return logging.ERROR
+    if log_level_text_descriptor == "INFO":
+        return logging.INFO
+    if log_level_text_descriptor == "WARN":
+        return logging.WARN
+    if log_level_text_descriptor == "DEBUG":
+        return logging.DEBUG
+
+
+def lookup_logging_level(log_level_text_descriptor, log_level_default="ERROR"):
+    import logging
+    available_logging_levels = ["CRITICAL", "ERROR", "INFO", "WARN", "DEBUG"]
+
+    if log_level_text_descriptor.upper() in available_logging_levels:
+        # print "log_level_text_descriptor: {}".format(log_level_text_descriptor)
+        return convert_logging_level(log_level_text_descriptor)
+    else:
+        # The log_level_text_descriptor is not a valid level, so use the debug level
+        if log_level_default.upper() in available_logging_levels:
+            # print "log_level_default: {}".format(log_level_default)
+            return convert_logging_level(log_level_default)
+        else:
+            # print "log_level failure default: {}".format("ERROR")
+            return logging.ERROR
+
+
+# Which level of logging event should get written to the command line?
+LOG_STREAM = get_environment_variable('LOG_STREAM')  # Turn command line logging on or off
+# print "Current LOG_STREAM_LEVEL setting:"
+LOG_STREAM_LEVEL = lookup_logging_level(get_environment_variable("LOG_STREAM_LEVEL"), "DEBUG")
+# Which level of logging event should get written to the log file?
+LOG_FILE = get_environment_variable('LOG_FILE')  # Location of the log file
+LOG_FILE_LEVEL = lookup_logging_level(get_environment_variable("LOG_FILE_LEVEL"), "ERROR")
+# print "Current LOG_FILE_LEVEL setting:"

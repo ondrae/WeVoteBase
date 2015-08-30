@@ -26,12 +26,4 @@ DATABASES = {
 }
 
 # ########## Logging configurations ###########
-#   LOG_STREAM          Boolean     True will turn on stream handler and write to command line.
-#   LOG_FILE            String      Path to file to write to. Make sure executing
-#                                   user has permissions.
-#   LOG_STREAM_LEVEL    Integer     Log level of stream handler: CRITICAL, ERROR, INFO, WARN, DEBUG
-#   LOG_FILE_LEVEL      Integer     Log level of file handler: CRITICAL, ERROR, INFO, WARN, DEBUG
-LOG_STREAM = True
-LOG_FILE = get_environment_variable('LOG_FILE')
-LOG_STREAM_LEVEL = logging.DEBUG
-LOG_FILE_LEVEL = logging.ERROR
+# Logging is configured in the wevotebase/environment_variables.json file
