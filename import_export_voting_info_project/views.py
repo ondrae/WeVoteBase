@@ -7,7 +7,8 @@ from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
-from import_export_voting_info_project.models import import_voting_info_project_from_xml
+from .controllers import import_voting_info_project_from_xml
+
 
 def import_voting_info_project_from_xml_view(request):
     """

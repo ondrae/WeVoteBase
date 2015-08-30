@@ -4,14 +4,11 @@
 
 from django.http import JsonResponse
 from django.shortcuts import render
-from django.contrib import messages
 from django.contrib.messages import get_messages
 from election_office_measure.models import CandidateCampaignManager
-from exception.models import handle_exception, handle_record_found_more_than_one_exception,\
-    handle_record_not_deleted_exception, handle_record_not_found_exception, handle_record_not_saved_exception
 from follow.models import FollowOrganizationList
 from organization.models import OrganizationManager
-from position.models import ANY, SUPPORT, NO_STANCE, INFORMATION_ONLY, STILL_DECIDING, OPPOSE, \
+from .models import ANY, SUPPORT, NO_STANCE, INFORMATION_ONLY, STILL_DECIDING, OPPOSE, \
     PositionListForCandidateCampaign
 from voter.models import fetch_voter_id_from_voter_device_link
 import wevote_functions.admin
@@ -58,6 +55,7 @@ def positions_count_for_candidate_campaign_view(request, candidate_campaign_id, 
             all_positions_list_for_candidate_campaign, organizations_followed_by_voter)
         positions_not_followed_count = len(positions_not_followed)
         return JsonResponse({0: positions_not_followed_count})
+
 
 def positions_related_to_candidate_campaign_view(request, candidate_campaign_id, stance_we_are_looking_for):
     """
@@ -107,9 +105,10 @@ def assemble_candidate_campaign_stance_html(
         candidate_campaign_id, stance_we_are_looking_for, positions_followed, positions_not_followed):
     """
 
-    :param all_positions_list_for_candidate_campaign:
-    :param stance_we_are_looking_for:
     :param candidate_campaign_id:
+    :param stance_we_are_looking_for:
+    :param positions_followed:
+    :param positions_not_followed:
     :return:
     """
     #################################
@@ -186,7 +185,8 @@ def assemble_candidate_campaign_stance_html(
             stance_we_are_looking_for, number_of_positions_followed_total, only_you)
         if verb_text:
             positions_followed_stance_html = "<span class='positions_followed_text'>" + positions_followed_stance_html
-            positions_followed_stance_html += " <span class='position_stance_verb'>{verb_text}</span>".format(verb_text=verb_text)
+            positions_followed_stance_html += " <span class='position_stance_verb'>{verb_text}</span>".format(
+                verb_text=verb_text)
             positions_followed_stance_html += "</span>"
 
     #################################
@@ -198,8 +198,6 @@ def assemble_candidate_campaign_stance_html(
     # If there aren't any "not followed" positions, just return the positions_followed_stance_html
     if number_of_positions_not_followed_total == 0:
         return positions_followed_stance_html
-    else:
-        only_you = False
 
     # If here we know there is at least one position available that isnt' being followed by voter
     popup_box_title = popup_box_title_verb+" "+popup_box_title_candidate_name
@@ -241,9 +239,11 @@ def assemble_candidate_campaign_stance_html(
             )
     elif number_of_positions_followed_total < 5:
         if number_of_positions_not_followed_total == 1:
-            not_followed_stance_verb = "other "+display_stance_verb_we_are_looking_for_plural(stance_we_are_looking_for)
+            not_followed_stance_verb = "other " \
+                + display_stance_verb_we_are_looking_for_plural(stance_we_are_looking_for)
         else:
-            not_followed_stance_verb = "others "+display_stance_verb_we_are_looking_for_singular(stance_we_are_looking_for)
+            not_followed_stance_verb = "others "\
+                + display_stance_verb_we_are_looking_for_singular(stance_we_are_looking_for)
         positions_not_followed_stance_html += \
             "({link_open}{number_of_positions_not_followed_total} {not_followed_stance_verb}</a>)".format(
                 link_open=link_open,
@@ -255,7 +255,8 @@ def assemble_candidate_campaign_stance_html(
             link_open=link_open,
         )
 
-    stance_html = positions_followed_stance_html + " " + "<span class='positions_not_followed'>" + positions_not_followed_stance_html + "</span>"
+    stance_html = positions_followed_stance_html + " " + "<span class='positions_not_followed'>" \
+        + positions_not_followed_stance_html + "</span>"
 
     return stance_html
 
@@ -409,9 +410,11 @@ def positions_related_to_measure_campaign_oppose_view(request, measure_campaign_
     """
     We want to return a JSON file with the oppose positions for a particular measure's campaign
     :param request:
-    :param candidate_campaign_id:
+    :param measure_campaign_id:
     :return:
     """
+    print "TO BE IMPLEMENTED, positions_related_to_measure_campaign_oppose_view, measure_campaign_id: {}".format(
+        measure_campaign_id)
     return JsonResponse({0: "Sierra Club opposes"})
 
 
@@ -419,9 +422,11 @@ def positions_related_to_measure_campaign_support_view(request, measure_campaign
     """
     We want to return a JSON file with the support positions for a particular measure's campaign
     :param request:
-    :param candidate_campaign_id:
+    :param measure_campaign_id:
     :return:
     """
+    print "TO BE IMPLEMENTED, positions_related_to_measure_campaign_support_view, measure_campaign_id: {}".format(
+        measure_campaign_id)
     return JsonResponse({0: "Irvine Republican Club supports"})
 
 

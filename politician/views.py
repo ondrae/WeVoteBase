@@ -8,11 +8,8 @@ from django.contrib import messages
 from django.contrib.messages import get_messages
 from django.core.urlresolvers import reverse
 from django.views import generic
-from django.views.generic import TemplateView
-from django.utils import timezone
-
-from politician.forms import TagNewForm
-from politician.models import Politician, PoliticianTagLink
+from .forms import TagNewForm
+from .models import Politician, PoliticianTagLink
 from tag.models import Tag
 
 
@@ -31,7 +28,8 @@ def politician_detail_view(request, politician_id):
     # post_list = Post.objects.filter
     template_values = {
         'politician_on_stage': politician_on_stage,
-        # 'post_list': tag_list,  # This is for prototyping only -- we want to move very quickly to posts being pulled onto the page via javascript
+        # 'post_list': tag_list,  # This is for prototyping only -- we want to move very quickly to
+        # posts being pulled onto the page via javascript
     }
     return render(request, 'politician/politician_detail.html', template_values)
 

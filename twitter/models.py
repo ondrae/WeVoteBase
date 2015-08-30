@@ -24,7 +24,8 @@ class Tweet(models.Model):
     locally so we can publish JSON from for consumption on the We Vote newsfeed.
     """
     # twitter_tweet_id # (unique id from twitter for tweet?)
-    author_handle = models.CharField(max_length=15, verbose_name='twitter handle of this tweet\'s author') # (stored quickly before we look up voter_id)
+    author_handle = models.CharField(max_length=15, verbose_name='twitter handle of this tweet\'s author')
+    # (stored quickly before we look up voter_id)
     # author_voter_id = models.ForeignKey(Voter, null=True, blank=True, related_name='we vote id of tweet author')
     is_retweet = models.BooleanField(default=False, verbose_name='is this a retweet?')
     # parent_tweet_id # If this is a retweet, what is the id of the originating tweet?
@@ -38,11 +39,13 @@ class TweetFavorite(models.Model):
     """
     tweet_id = models.ForeignKey(Tweet, null=True, blank=True, verbose_name='we vote tweet id')
     # twitter_tweet_id # (unique id from twitter for tweet?)
-    # TODO Should favorited_by_handle be a ForeignKey link to the Twitter User? I'm concerned this will slow down saving,
+    # TODO Should favorited_by_handle be a ForeignKey link to the Twitter User? I'm concerned this will slow saving,
     #  and it might be better to ForeignKey against voter_id
     favorited_by_handle = models.CharField(
-        max_length=15, verbose_name='twitter handle of person who favorited this tweet') # (stored quickly before we look up voter_id)
-    # favorited_by_voter_id = models.ForeignKey(Voter, null=True, blank=True, related_name='tweet favorited by voter_id')
+        max_length=15, verbose_name='twitter handle of person who favorited this tweet')
+    # (stored quickly before we look up voter_id)
+    # favorited_by_voter_id = models.ForeignKey(
+    # Voter, null=True, blank=True, related_name='tweet favorited by voter_id')
     date_favorited = models.DateTimeField(null=True, verbose_name='date favorited')
 
 

@@ -51,12 +51,14 @@ def my_ballot_view(request):
     set_voter_device_id(request, response, voter_device_id)
     return response
 
+
 def start_view(request):
 
     template_values = {
 
     }
     return render(request, 'ux_oak/start.html', template_values)
+
 
 def ask_view(request, candidate_campaign_id):
     friends = []

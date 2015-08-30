@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
-from import_export_maplight.models import import_maplight_from_json
+from .controllers import import_maplight_from_json
 
 def import_maplight_from_json_view(request):
     """

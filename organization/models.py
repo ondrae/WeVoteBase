@@ -3,8 +3,7 @@
 # -*- coding: UTF-8 -*-
 
 from django.db import models
-from exception.models import handle_exception, handle_record_found_more_than_one_exception,\
-    handle_record_not_found_exception, handle_record_not_saved_exception
+from exception.models import handle_record_found_more_than_one_exception
 import wevote_functions.admin
 from wevote_settings.models import fetch_next_id_we_vote_last_org_integer, fetch_site_unique_id_prefix
 
@@ -94,6 +93,7 @@ class Organization(models.Model):
             self.NONPROFIT_501C3, self.NONPROFIT_501C4, self.POLITICAL_ACTION_COMMITTEE,
             self.CORPORATION, self.NEWS_CORPORATION)
 
+
 class OrganizationManager(models.Model):
     """
     A class for working with the Organization model
@@ -116,7 +116,7 @@ class OrganizationManager(models.Model):
             error_result = True
             exception_multiple_object_returned = True
             logger.warn("Organization.MultipleObjectsReturned")
-        except Organization.DoesNotExist as e:
+        except Organization.DoesNotExist:
             error_result = True
             exception_does_not_exist = True
             logger.warn("Organization.DoesNotExist")

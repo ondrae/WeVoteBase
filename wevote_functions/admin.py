@@ -10,9 +10,6 @@ import logging
 import logging.handlers
 import os
 import socket
-import sys
-
-from django.contrib import admin
 
 
 _ch = None  # root stream handler.

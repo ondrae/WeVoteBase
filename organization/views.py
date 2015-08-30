@@ -2,18 +2,17 @@
 # Brought to you by We Vote. Be good.
 # -*- coding: UTF-8 -*-
 
-from django import forms
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse
 from django.core.urlresolvers import reverse
 from django.contrib import messages
 from django.contrib.messages import get_messages
 from django.shortcuts import redirect, render
-from exception.models import handle_exception, handle_record_found_more_than_one_exception,\
+from exception.models import handle_record_found_more_than_one_exception,\
     handle_record_not_deleted_exception, handle_record_not_found_exception, handle_record_not_saved_exception
-from election_office_measure.models import CandidateCampaign, CandidateCampaignList, MeasureCampaign
+from election_office_measure.models import CandidateCampaign, CandidateCampaignList
 from follow.models import FollowOrganizationManager
-from organization.models import Organization
-from position.models import Position, PositionEntered, PositionEnteredManager, NO_STANCE, INFORMATION_ONLY, OPPOSE, \
+from .models import Organization
+from position.models import PositionEntered, PositionEnteredManager, INFORMATION_ONLY, OPPOSE, \
     STILL_DECIDING, SUPPORT
 from voter.models import fetch_voter_id_from_voter_device_link
 import wevote_functions.admin
@@ -66,7 +65,7 @@ def organization_edit_view(request, organization_id):
         organization_on_stage_found = True
     except Organization.MultipleObjectsReturned as e:
         handle_record_found_more_than_one_exception(e, logger=logger)
-    except Organization.DoesNotExist as e:
+    except Organization.DoesNotExist:
         # This is fine, create new
         pass
 
@@ -98,8 +97,6 @@ def organization_edit_process_view(request):
     # Check to see if this organization is already being used anywhere
     organization_on_stage_found = False
     try:
-        # organization_query = Organization.objects.all()
-        # organization_query = organization_query.filter(id=organization_id)
         organization_query = Organization.objects.filter(id=organization_id)
         if len(organization_query):
             organization_on_stage = organization_query[0]
@@ -150,7 +147,6 @@ def organization_position_list_view(request, organization_id):
         try:
             organization_position_list = PositionEntered.objects.order_by('stance')
             organization_position_list = organization_position_list.filter(organization_id=organization_id)
-            # organization_position_list = organization_position_list.filter(election_id=election_id)
             if len(organization_position_list):
                 organization_position_list_found = True
         except Exception as e:
@@ -184,7 +180,7 @@ def organization_add_new_position_form_view(request, organization_id):
         organization_on_stage_found = True
     except Organization.MultipleObjectsReturned as e:
         handle_record_found_more_than_one_exception(e, logger=logger)
-    except Organization.DoesNotExist as e:
+    except Organization.DoesNotExist:
         # This is fine, create new
         pass
 
@@ -254,7 +250,6 @@ def organization_delete_existing_position_process_form_view(request, organizatio
     return HttpResponseRedirect(reverse('organization:organization_position_list', args=([organization_id])))
 
 
-
 def organization_edit_existing_position_form_view(request, organization_id, position_id):
     """
     In edit, you can only change your stance and comments, not who or what the position is about
@@ -276,7 +271,7 @@ def organization_edit_existing_position_form_view(request, organization_id, posi
         organization_on_stage_found = True
     except Organization.MultipleObjectsReturned as e:
         handle_record_found_more_than_one_exception(e, logger=logger)
-    except Organization.DoesNotExist as e:
+    except Organization.DoesNotExist:
         # This is fine, create new
         pass
 
@@ -337,7 +332,7 @@ def organization_save_new_or_edit_existing_position_process_form_view(request):
     try:
         organization_query = Organization.objects.filter(id=organization_id)
         if len(organization_query):
-            organization_on_stage = organization_query[0]
+            # organization_on_stage = organization_query[0]
             organization_on_stage_found = True
     except Exception as e:
         # If we can't retrieve the organization, we cannot proceed
@@ -400,7 +395,8 @@ def organization_save_new_or_edit_existing_position_process_form_view(request):
         # Check to make sure a position for this org and candidate doesn't already exist
 
         position_entered_manager = PositionEnteredManager()
-        results = position_entered_manager.retrieve_organization_candidate_campaign_position(organization_id, candidate_campaign_id)
+        results = position_entered_manager.retrieve_organization_candidate_campaign_position(
+            organization_id, candidate_campaign_id)
 
         if results['MultipleObjectsReturned']:
             messages.add_message(
@@ -423,7 +419,8 @@ def organization_save_new_or_edit_existing_position_process_form_view(request):
             organization_position_on_stage.save()
             messages.add_message(
                 request, messages.INFO,
-                "Position on {candidate_name} updated.".format(candidate_name=candidate_campaign_on_stage.candidate_name))
+                "Position on {candidate_name} updated.".format(
+                    candidate_name=candidate_campaign_on_stage.candidate_name))
         else:
             # Create new
             organization_position_on_stage = PositionEntered(
@@ -436,12 +433,14 @@ def organization_save_new_or_edit_existing_position_process_form_view(request):
             organization_position_on_stage.save()
             messages.add_message(
                 request, messages.INFO,
-                "New position on {candidate_name} saved.".format(candidate_name=candidate_campaign_on_stage.candidate_name))
+                "New position on {candidate_name} saved.".format(
+                    candidate_name=candidate_campaign_on_stage.candidate_name))
     except Exception as e:
         handle_record_not_saved_exception(e, logger=logger)
         logger.error("Problem saving PositionEntered for CandidateCampaign")
 
     return HttpResponseRedirect(reverse('organization:organization_position_list', args=([organization_id])))
+
 
 def organization_follow_view(request, organization_id):
     logger.debug("organization_follow_view {organization_id}".format(

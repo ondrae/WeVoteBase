@@ -78,6 +78,9 @@ def voter_asking_candidate_campaign_view(request, candidate_campaign_id):
     ))
     voter_device_id = get_voter_device_id(request)
     voter_id = fetch_voter_id_from_voter_device_link(voter_device_id)
+    logger.debug("voter_asking_candidate_campaign_view NOT BUILT YET, voter_id: {voter_id}".format(
+        voter_id=voter_id
+    ))
 
     return JsonResponse({0: "not working yet - needs to be built"})
 
@@ -88,6 +91,9 @@ def voter_stop_asking_candidate_campaign_view(request, candidate_campaign_id):
     ))
     voter_device_id = get_voter_device_id(request)
     voter_id = fetch_voter_id_from_voter_device_link(voter_device_id)
+    logger.debug("voter_stop_asking_candidate_campaign_view NOT BUILT YET, voter_id: {voter_id}".format(
+        voter_id=voter_id
+    ))
 
     return JsonResponse({0: "not working yet - needs to be built"})
 
@@ -121,5 +127,8 @@ def voter_stance_for_measure_campaign_view(request, measure_campaign_id):
     ))
     voter_device_id = get_voter_device_id(request)
     voter_id = fetch_voter_id_from_voter_device_link(voter_device_id)
+    logger.debug("voter_stance_for_measure_campaign_view NOT BUILT YET, voter_id: {voter_id}".format(
+        voter_id=voter_id
+    ))
 
     return JsonResponse({0: "not working yet - needs to be built"})

@@ -3,7 +3,7 @@
 # -*- coding: UTF-8 -*-
 
 from django.db import models
-from exception.models import handle_exception, handle_record_found_more_than_one_exception,\
+from exception.models import handle_record_found_more_than_one_exception,\
     handle_record_not_found_exception, handle_record_not_saved_exception
 from organization.models import OrganizationManager
 import wevote_functions.admin
@@ -141,7 +141,7 @@ class FollowOrganizationManager(models.Model):
             handle_record_found_more_than_one_exception(e, logger=logger)
             error_result = True
             exception_multiple_object_returned = True
-        except FollowOrganization.DoesNotExist as e:
+        except FollowOrganization.DoesNotExist:
             error_result = True
             exception_does_not_exist = True
 
@@ -169,6 +169,7 @@ class FollowOrganizationList(models.Model):
         # Retrieve a list of follow_organization entries for this voter
         follow_organization_list_found = False
         following_status = FOLLOWING
+        follow_organization_list = {}
         try:
             follow_organization_list = FollowOrganization.objects.all()
             follow_organization_list = follow_organization_list.filter(voter_id=voter_id)
@@ -186,7 +187,8 @@ class FollowOrganizationList(models.Model):
 
     def retrieve_follow_organization_info_for_voter_simple_array(self, voter_id):
         follow_organization_list_manager = FollowOrganizationList()
-        follow_organization_list = follow_organization_list_manager.retrieve_follow_organization_info_for_voter(voter_id)
+        follow_organization_list = \
+            follow_organization_list_manager.retrieve_follow_organization_info_for_voter(voter_id)
         follow_organization_list_simple_array = []
         if len(follow_organization_list):
             for follow_organization in follow_organization_list:
@@ -197,6 +199,7 @@ class FollowOrganizationList(models.Model):
         # Retrieve a list of follow_organization entries for this organization
         follow_organization_list_found = False
         following_status = FOLLOWING
+        follow_organization_list = {}
         try:
             follow_organization_list = FollowOrganization.objects.all()
             follow_organization_list = follow_organization_list.filter(organization_id=organization_id)

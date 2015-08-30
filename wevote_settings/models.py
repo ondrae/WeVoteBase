@@ -3,8 +3,8 @@
 # -*- coding: UTF-8 -*-
 
 from django.db import models
-from exception.models import handle_exception, handle_record_found_more_than_one_exception,\
-    handle_record_not_found_exception, handle_record_not_saved_exception
+from exception.models import handle_record_found_more_than_one_exception,\
+    handle_record_not_saved_exception
 import string
 import wevote_functions.admin
 from wevote_functions.models import convert_to_int, generate_random_string
@@ -54,7 +54,7 @@ class WeVoteSettingsManager(models.Model):
         except WeVoteSetting.MultipleObjectsReturned as e:
             handle_record_found_more_than_one_exception(e, logger=logger)
             return ''
-        except WeVoteSetting.DoesNotExist as e:
+        except WeVoteSetting.DoesNotExist:
             return ''
 
         return ''
@@ -88,7 +88,7 @@ class WeVoteSettingsManager(models.Model):
             we_vote_setting_exists = True
         except WeVoteSetting.MultipleObjectsReturned as e:
             handle_record_found_more_than_one_exception(e, logger=logger)
-        except WeVoteSetting.DoesNotExist as e:
+        except WeVoteSetting.DoesNotExist:
             we_vote_setting_does_not_exist = True
 
         we_vote_setting_manager = WeVoteSettingsManager()
@@ -213,6 +213,7 @@ def fetch_next_id_we_vote_last_contest_measure_integer():
     we_vote_settings_manager.save_setting('id_we_vote_last_contest_measure_integer',
                                           id_we_vote_last_contest_measure_integer)
     return id_we_vote_last_contest_measure_integer
+
 
 def fetch_next_id_we_vote_last_measure_campaign_integer():
     we_vote_settings_manager = WeVoteSettingsManager()

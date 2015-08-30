@@ -26,7 +26,7 @@ class switch(object):
         """Indicate whether or not to enter a case suite"""
         if self.fall or not args:
             return True
-        elif self.value in args: # changed for v1.5, see below
+        elif self.value in args:  # changed for v1.5, see below
             self.fall = True
             return True
         else:
@@ -51,12 +51,14 @@ class switch(object):
 #     if case(): # default
 #         print "I dunno what c was!"
 
+
 def convert_to_int(value):
     try:
         new_value = int(value)
     except ValueError:
         new_value = 0
     return new_value
+
 
 # http://stackoverflow.com/questions/1622793/django-cookies-how-can-i-set-them
 def set_cookie(response, cookie_name, cookie_value, days_expire=None):
@@ -67,6 +69,7 @@ def set_cookie(response, cookie_name, cookie_value, days_expire=None):
     expires = datetime.datetime.strftime(datetime.datetime.utcnow() + datetime.timedelta(seconds=max_age),
                                          "%a, %d-%b-%Y %H:%M:%S GMT")
     response.set_cookie(cookie_name, cookie_value, max_age=max_age, expires=expires)
+
 
 def get_voter_device_id(request, generate_if_no_cookie=False):
     voter_device_id = ''
@@ -84,9 +87,11 @@ def get_voter_device_id(request, generate_if_no_cookie=False):
         ))
     return voter_device_id
 
+
 def set_voter_device_id(request, response, voter_device_id):
     if 'voter_device_id' not in request.COOKIES:
         set_cookie(response, 'voter_device_id', voter_device_id)
+
 
 def generate_random_string(string_length=88, chars=string.ascii_lowercase + string.ascii_uppercase + string.digits):
     """
@@ -96,6 +101,7 @@ def generate_random_string(string_length=88, chars=string.ascii_lowercase + stri
     :return:
     """
     return ''.join(random.SystemRandom().choice(chars) for _ in range(string_length))
+
 
 def generate_voter_device_id():
     # We would like this device_id to be long so hackers can't cycle through all possible device ids to get access to
@@ -114,6 +120,7 @@ def generate_voter_device_id():
     # Check that this device_id isn't already in the database
     # TODO Implement the check
     return new_device_id
+
 
 def value_exists(value):
     """
